@@ -22,7 +22,7 @@ process.env.JWT_SECRET);
     return res.status(201).json({ id: user.id, token }); 
   } catch (err) { 
     console.error(err); 
-    res.status(500).json({ error: "Server error" }); 
+    res.status(500).json({ error: "Server error" +err}); 
   } 
 }); 
  

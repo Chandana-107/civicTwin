@@ -32,7 +32,7 @@ app.use("/topics", topicsRoutes);
 app.use("/social", socialRoutes);
 
 app.get("/", (req, res) => {
-  res.send(`Civic Backend running. Schema doc path: ${process.env.SCHEMA_DOC_PATH || "not set"}`);
+  res.send(`Civic Backend running on port ${process.env.PORT || 3000}`);
 });
 
 const port = Number(process.env.PORT || 3000);

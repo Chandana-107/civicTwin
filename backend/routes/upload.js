@@ -3,7 +3,7 @@ const express = require("express");
 const multer = require("multer"); 
 const path = require("path"); 
 const fs = require("fs"); 
-require("dotenv").config(); 
+require("dotenv").config({path:'../.env'}); 
 const router = express.Router(); 
  
 const uploadDir = process.env.UPLOADS_DIR || "./uploads"; 
