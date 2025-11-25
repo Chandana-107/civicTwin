@@ -1,3 +1,15 @@
 .env
 __pycache__/
 node_modules/
+infra/labels.csv
+
+# ML model artifacts (DO NOT TRACK IN GIT)
+ml/classifier_service/models/
+!ml/classifier_service/models/.gitkeep
+
+ml/classifier_service/metrics/
+!ml/classifier_service/metrics/.gitkeep
+
+# Python cache
+__pycache__/
+*.pyc
