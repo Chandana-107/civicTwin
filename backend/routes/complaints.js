@@ -20,8 +20,7 @@ router.post("/", auth, async (req, res) => {
   } 
   try { 
     const q = `INSERT INTO complaints 
-(user_id,title,text,category,priority,location_geometry,location_address,attachment_url,consent_given,
- created_at) 
+(user_id,title,text,category,priority,location_geometry,location_address,attachment_url,consent_given) 
                VALUES ($1,$2,$3,$4,$5,ST_SetSRID(ST_MakePoint($6,$7),4326),$8,$9,$10) 
 RETURNING *`; 
     const vals = [req.user.id, title, text, category, priority, lng, lat, location_address || null, 
