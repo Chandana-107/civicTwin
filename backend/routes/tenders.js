@@ -15,8 +15,7 @@ router.post("/", auth, async (req, res) => {
   try { 
     const r = await pool.query( 
       `INSERT INTO tenders 
-(id,tender_number,title,contractor,contractor_id,amount,date,category,department,beneficiary_id,phon
- e,address,meta) 
+(id,tender_number,title,contractor,contractor_id,amount,date,category,department,beneficiary_id,phone,address,meta) 
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`, 
       [uuidv4(), tender_number, title, contractor, contractor_id || null, amount, date, category || null, 
 department || null, beneficiary_id || null, phone || null, address || null, meta || null] 
