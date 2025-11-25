@@ -31,8 +31,7 @@ router.post("/run", auth, async (req, res) => {
   try { 
     await pool.query("BEGIN"); 
  
-    // 1) repeat_winner: contractors who won > REPEAT_WINNER_THRESHOLD tenders in last 365 
-days 
+    // 1) repeat_winner: contractors who won > REPEAT_WINNER_THRESHOLD tenders in last 365 days 
     const threshold = Number(process.env.REPEAT_WINNER_THRESHOLD || 5); 
     const q1 = ` 
       SELECT contractor_id, contractor, COUNT(*) as wins, array_agg(id) as tender_ids 
@@ -98,8 +97,7 @@ beneficiary_id: d.beneficiary_id, count: Number(d.cnt) }), 'pending']
     } 
  
     // 4) simple cluster generation: group by contractor_id and shared phone/address => cluster nodes 
-    // For a quick graph: group contractors who share phone or address or beneficiary_id with each 
-other 
+    // For a quick graph: group contractors who share phone or address or beneficiary_id with each other 
     const nodesRes = await pool.query("SELECT id, contractor, contractor_id, phone, address, beneficiary_id FROM tenders WHERE contractor_id IS NOT NULL"); 
     const nodes = nodesRes.rows; 
     // build a simple adjacency map 
