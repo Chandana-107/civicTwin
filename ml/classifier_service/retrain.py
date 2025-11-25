@@ -1,33 +1,62 @@
-# ml/classifier_service/retrain.py
-import os, pandas as pd, subprocess
-from sqlalchemy import create_engine, text
-from datetime import datetime
+import os
+import pandas as pd
+from sqlalchemy import create_engine
+from datetime import datetime, timezone
+from dotenv import load_dotenv
+import subprocess
 
+# Load environment variables
+load_dotenv()
+
+# Build paths
 DB_URL = os.getenv("DATABASE_URL")
-LABELS_CSV = "../../infra/labels.csv"
-MODELS_DIR = "models"
-TMP_DIR = f"models/tmp_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+if not DB_URL:
+    raise RuntimeError("DATABASE_URL missing in .env")
+
+LABELS_CSV = os.path.abspath("../../infra/labels.csv")
+MODELS_DIR = os.path.abspath("models")
 
 def export_labels():
-    engine = create_engine(DB_URL)
-    df = pd.read_sql("SELECT text, correct_category AS category FROM labels", engine)
-    df.to_csv(LABELS_CSV, index=False)
+    print("📥 Exporting labels from database...")
 
-def retrain():
-    os.makedirs(TMP_DIR, exist_ok=True)
-    export_labels()
+    engine = create_engine(DB_URL)
+
+    QUERY = """
+    SELECT 
+        complaints.text AS text,
+        labels.category AS category
+    FROM labels
+    JOIN complaints ON complaints.id = labels.complaint_id
+    WHERE labels.category IS NOT NULL
+      AND complaints.text IS NOT NULL
+    ORDER BY labels.created_at DESC;
+    """
+
+    df = pd.read_sql(QUERY, engine)
+
+    if df.empty:
+        raise RuntimeError("❌ No labeled samples found in DB. Add labels first!")
+
+    df.to_csv(LABELS_CSV, index=False)
+    print(f"✔ Exported {len(df)} labeled rows → {LABELS_CSV}")
+
+def train_model():
+    print("🛠 Training model...")
+
     subprocess.check_call([
-        "python3", "train.py",
+        "python", "train.py",
         "--labels", LABELS_CSV,
-        "--out", TMP_DIR
+        "--out", MODELS_DIR
     ])
-    # atomic replace
-    if os.path.exists(MODELS_DIR):
-        os.rename(MODELS_DIR, MODELS_DIR + "_old")
-    os.rename(TMP_DIR, MODELS_DIR)
+
+    print(f"✔ Model updated → {MODELS_DIR}")
 
 if __name__ == "__main__":
-    if not DB_URL:
-        raise RuntimeError("DATABASE_URL missing")
-    retrain()
-    print("Retrain completed")
+    print("====== CivicTwin Simple Retrain ======")
+
+    try:
+        export_labels()
+        train_model()
+        print("🎉 Retraining completed successfully!")
+    except Exception as e:
+        print("❌ Error during retrain:", e)
