@@ -13,3 +13,5 @@ ml/classifier_service/metrics/
 # Python cache
 __pycache__/
 *.pyc
+
+ml/myenv
