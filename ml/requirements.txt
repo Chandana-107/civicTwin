@@ -5,7 +5,7 @@ fastapi==0.110.0
 uvicorn==0.27.1
 
 # -----------------------
-# ML + NLP (Common)
+# ML + NLP
 # -----------------------
 scikit-learn==1.4.2
 pandas==2.2.1
@@ -13,7 +13,7 @@ numpy==1.26.4
 joblib==1.3.2
 
 # -----------------------
-# Database Connectivity
+# Database
 # -----------------------
 sqlalchemy==2.0.28
 psycopg2-binary==2.9.9
@@ -24,21 +24,17 @@ psycopg2-binary==2.9.9
 python-dotenv==1.0.1
 
 # -----------------------
-# Additional NLP for Day 25 - VADER
+# NLP libraries
 # -----------------------
-nltk==3.8.1
+nltk==3.8.1        # For VADER
+yake==0.4.8        # For keyword extraction - Python 3.12 compatible
 
 # -----------------------
-# Additional NLP for Day 26 - RAKE
-# -----------------------
-rake-nltk==1.0.4
-
-# -----------------------
-# Optional - For fast API calls to Python services (if needed)
+# HTTP Clients
 # -----------------------
 requests==2.31.0
 
 # -----------------------
-# Gunicorn (only if you deploy Python services)
+# Deployment optional
 # -----------------------
 gunicorn==21.2.0
