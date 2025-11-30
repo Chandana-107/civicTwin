@@ -5,7 +5,7 @@ const { pool } = require('../db');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
-// POST /api/social/ingest
+// POST /social_ingest/ingest
 // body: { posts: [{source, source_id, text, author, posted_at}] }
 router.post('/ingest', async (req, res) => {
   const posts = req.body.posts;
@@ -26,7 +26,7 @@ router.post('/ingest', async (req, res) => {
       await client.query(insertQ, [id, p.source || 'synthetic', p.source_id || null, p.text || '', p.author || null, p.posted_at || new Date().toISOString()]);
       // call sentiment store to update sentiment for this row
       try {
-        await axios.post('http://localhost:3000/api/sentiment/store', { table: 'social_feed', id, text: p.text });
+        await axios.post('http://localhost:3000/sentiment/store', { table: 'social_feed', id, text: p.text });
       } catch (err) {
         console.warn('Warning: sentiment store failed for post id', id, err.message);
       }

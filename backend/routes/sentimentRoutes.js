@@ -4,7 +4,7 @@ const router = express.Router();
 const axios = require('axios');
 const { pool } = require('../db'); // adjust import to your db.js export
 
-// POST /api/sentiment -> proxy to VADER service
+// POST /sentiment -> proxy to VADER service
 router.post('/', async (req, res) => {
   const text = req.body.text || '';
   try {
@@ -17,7 +17,7 @@ router.post('/', async (req, res) => {
 });
 
 /*
-  POST /api/sentiment/store
+  POST /sentiment/store
   body: { table: 'social_feed'|'complaints', id: '<uuid>', text: '...', posted_at: optional ISO }
   -> calls VADER, updates the corresponding table row with sentiment and sentiment_score
 */
@@ -39,7 +39,7 @@ router.post('/store', async (req, res) => {
     try {
       const updateQuery = `
         UPDATE ${table}
-        SET sentiment = $1, sentiment_score = $2, updated_at = now()
+        SET sentiment = $1, sentiment_score = $2
         WHERE id = $3
       `;
       await client.query(updateQuery, [label, score, id]);

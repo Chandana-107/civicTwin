@@ -13,6 +13,11 @@ const fraudRoutes = require("./routes/fraud");
 const simulationRoutes = require("./routes/simulation");
 const topicsRoutes = require("./routes/topics");
 const socialRoutes = require("./routes/social_feed");
+// Sentiment Analysis and Alerting Routes
+const syntheticSocialRoutes = require("./routes/socialRoutes");
+const analyticsTopicRoutes = require("./routes/topicRoutes");
+const sentimentRoutes = require("./routes/sentimentRoutes");
+const alertRoutes = require("./routes/alertRoutes");
 
 const app = express();
 app.use(cors());
@@ -30,6 +35,11 @@ app.use("/fraud", fraudRoutes);
 app.use("/simulation", simulationRoutes);
 app.use("/topics", topicsRoutes);
 app.use("/social", socialRoutes);
+// Sentiment Analysis and Alerting Routes
+app.use("/social_ingest", syntheticSocialRoutes);
+app.use("/topics_analytics", analyticsTopicRoutes);
+app.use("/sentiment", sentimentRoutes);
+app.use("/alerts", alertRoutes);
 
 app.get("/", (req, res) => {
   res.send(`Civic Backend running on port ${process.env.PORT || 3000}`);

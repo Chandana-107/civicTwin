@@ -1,10 +1,10 @@
 # infra/ingest_social.py
 import requests
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, UTC
 import random
 
-BACKEND_INGEST_URL = "http://localhost:3000/api/social/ingest"  # adjust if server port differs
+BACKEND_INGEST_URL = "http://localhost:3000/social_ingest/ingest"  # adjust if server port differs
 
 SOURCES = ['twitter', 'facebook', 'instagram', 'local_forum']
 NEGATIVE_EXAMPLES = [
@@ -29,7 +29,7 @@ def make_post(text, source=None):
         "source_id": str(uuid.uuid4())[:12],
         "text": text,
         "author": "synthetic_user",
-        "posted_at": datetime.utcnow().isoformat()
+        "posted_at": datetime.now(UTC).isoformat()
     }
 
 def generate_posts(n=20, negative_ratio=0.3):
