@@ -4,7 +4,7 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./auth/auth.routes");
 const usersRoutes = require("./routes/users");
 const complaintsRoutes = require("./routes/complaints");
 const uploadRoutes = require("./routes/upload");
@@ -26,6 +26,7 @@ app.use(express.json());
 // static uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
+app.use("/api/auth", authRoutes);
 app.use("/auth", authRoutes);
 app.use("/users", usersRoutes);
 app.use("/complaints", complaintsRoutes);
