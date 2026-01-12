@@ -3,7 +3,7 @@ from infra.db import get_connection
 from faker import Faker
 import random
 
-fake = Faker()
+fake = Faker("en_IN")
 
 def random_location():
     # Bengaluru bounding box from your PDF

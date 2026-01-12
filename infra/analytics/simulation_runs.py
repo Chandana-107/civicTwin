@@ -5,7 +5,7 @@ import random
 import json
 from datetime import timedelta
 
-fake = Faker()
+fake = Faker("en_IN")
 
 def seed_simulation_runs(count=80):
     conn = get_connection()

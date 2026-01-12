@@ -3,7 +3,7 @@ from infra.db import get_connection
 from faker import Faker
 import random
 
-fake = Faker()
+fake = Faker("en_IN")
 
 def seed_daily_topics(days=30, per_day=5):
     conn = get_connection()

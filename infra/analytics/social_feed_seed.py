@@ -3,7 +3,7 @@ from infra.db import get_connection
 from faker import Faker
 import random
 
-fake = Faker()
+fake = Faker("en_IN")
 
 def random_location():
     lat = random.uniform(12.8, 13.2)

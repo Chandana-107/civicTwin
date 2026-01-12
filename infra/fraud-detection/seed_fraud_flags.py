@@ -5,7 +5,7 @@ import random
 import json
 from datetime import datetime, timedelta
 
-fake = Faker()
+fake = Faker("en_IN")
 
 RULES = [
     "repeat_winner",
