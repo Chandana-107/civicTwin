@@ -37,19 +37,19 @@ exports.verifyOTP = async (req, res) => {
 
 /* 3️⃣ REGISTER */
 exports.register = async (req, res) => {
-  const { name, email, password, aadhaar, phone } = req.body;
+  const { name, email, password, aadhaar, phone, role } = req.body;
 
-  if (!name || !email || !password || !aadhaar || !phone)
+  if (!name || !email || !password || !aadhaar || !phone || !role)
     return res.status(400).json({ error: "Missing fields" });
 
   const hash = await bcrypt.hash(password, 10);
 
   const result = await pool.query(
     `INSERT INTO users
-     (name, email, password_hash, aadhaar_number, phone, is_aadhaar_verified)
-     VALUES ($1,$2,$3,$4,$5,true)
+     (name, email, password_hash, aadhaar_number, phone, is_aadhaar_verified, role)
+     VALUES ($1,$2,$3,$4,$5,true,$6)
      RETURNING id`,
-    [name, email, hash, aadhaar, phone]
+    [name, email, hash, aadhaar, phone, role]
   );
 
   res.status(201).json({
