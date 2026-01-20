@@ -6,7 +6,7 @@ import './Auth.css'
 
 const Signup = () => {
   const navigate = useNavigate()
-  const { signup } = useAuth()
+  const { signup, requestOTP, verifyOTP } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -14,21 +14,89 @@ const Signup = () => {
     password: '',
     confirmPassword: '',
     aadhaar: '',
-    role: 'citizen'
+    role: '',
+    otp: ''
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
+  const [otpVerified, setOtpVerified] = useState(false)
+  const [canResend, setCanResend] = useState(false)
+  const [countdown, setCountdown] = useState(60)
 
   const handleChange = (e) => {
+    const { name, value } = e.target
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
+
+    // Reset OTP state if Aadhaar is changed after OTP was sent
+    if (name === 'aadhaar' && otpSent) {
+      setOtpSent(false)
+      setOtpVerified(false)
+      setFormData(prev => ({ ...prev, otp: '' }))
+    }
+  }
+
+  const handleRequestOTP = async () => {
+    if (formData.aadhaar.length !== 12) {
+      toast.error('Please enter a valid 12-digit Aadhaar number')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await requestOTP(formData.aadhaar)
+      toast.success('OTP sent to your registered mobile number')
+      setOtpSent(true)
+      setCanResend(false)
+      setCountdown(60)
+
+      // Start countdown timer
+      const timer = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            setCanResend(true)
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Failed to send OTP')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleVerifyOTP = async () => {
+    if (formData.otp.length !== 6) {
+      toast.error('Please enter a valid 6-digit OTP')
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      await verifyOTP(formData.aadhaar, formData.otp)
+      toast.success('Aadhaar verified successfully!')
+      setOtpVerified(true)
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'Invalid OTP')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
 
     // Validation
+    if (!otpVerified) {
+      toast.error('Please verify your Aadhaar with OTP first')
+      return
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match')
       return
@@ -39,15 +107,9 @@ const Signup = () => {
       return
     }
 
-    if (formData.aadhaar.length !== 12) {
-      toast.error('Aadhaar number must be 12 digits')
-      return
-    }
-
     setIsLoading(true)
 
     try {
-      // First request OTP for Aadhaar verification
       await signup({
         name: formData.name,
         phone: formData.phone,
@@ -131,19 +193,82 @@ const Signup = () => {
             <label className="form-label" htmlFor="aadhaar">
               Aadhaar Number
             </label>
-            <input
-              type="text"
-              id="aadhaar"
-              name="aadhaar"
-              className="form-input"
-              placeholder="12-digit Aadhaar number"
-              value={formData.aadhaar}
-              onChange={handleChange}
-              required
-              pattern="[0-9]{12}"
-              maxLength="12"
-            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input
+                type="text"
+                id="aadhaar"
+                name="aadhaar"
+                className="form-input"
+                placeholder="12-digit Aadhaar number"
+                value={formData.aadhaar}
+                onChange={handleChange}
+                required
+                pattern="[0-9]{12}"
+                maxLength="12"
+                disabled={otpVerified}
+                style={{ flex: 1 }}
+              />
+              {!otpVerified && (
+                <button
+                  type="button"
+                  onClick={handleRequestOTP}
+                  className="btn btn-secondary"
+                  disabled={isLoading || formData.aadhaar.length !== 12 || otpSent}
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {otpSent ? 'OTP Sent' : 'Send OTP'}
+                </button>
+              )}
+              {otpVerified && (
+                <span style={{ color: 'var(--secondary-color)', alignSelf: 'center', whiteSpace: 'nowrap' }}>
+                  ✓ Verified
+                </span>
+              )}
+            </div>
           </div>
+
+          {otpSent && !otpVerified && (
+            <div className="form-group">
+              <label className="form-label" htmlFor="otp">
+                Enter OTP
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  id="otp"
+                  name="otp"
+                  className="form-input"
+                  placeholder="6-digit OTP"
+                  value={formData.otp}
+                  onChange={handleChange}
+                  maxLength="6"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyOTP}
+                  className="btn btn-primary"
+                  disabled={isLoading || formData.otp.length !== 6}
+                >
+                  Verify
+                </button>
+              </div>
+              {canResend ? (
+                <button
+                  type="button"
+                  onClick={handleRequestOTP}
+                  className="auth-link-button"
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Resend OTP
+                </button>
+              ) : (
+                <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  Resend OTP in {countdown}s
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="form-group">
             <label className="form-label" htmlFor="role">
@@ -157,6 +282,7 @@ const Signup = () => {
               onChange={handleChange}
               required
             >
+              <option value="" disabled>Select your role</option>
               <option value="citizen">Citizen</option>
               <option value="admin">Admin</option>
             </select>
