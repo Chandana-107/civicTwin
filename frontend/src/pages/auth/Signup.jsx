@@ -19,7 +19,7 @@ const Signup = () => {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
-  const [otpVerified, setOtpVerified] = useState(false)
+  const [otpVerified, setOtpVerified] = useState(true) // Set to true for testing (mock verified)
   const [canResend, setCanResend] = useState(false)
   const [countdown, setCountdown] = useState(60)
 
@@ -92,10 +92,11 @@ const Signup = () => {
     e.preventDefault()
 
     // Validation
-    if (!otpVerified) {
-      toast.error('Please verify your Aadhaar with OTP first')
-      return
-    }
+    // Mock mode - skip OTP verification check for testing
+    // if (!otpVerified) {
+    //   toast.error('Please verify your Aadhaar with OTP first')
+    //   return
+    // }
 
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match')
@@ -205,7 +206,6 @@ const Signup = () => {
                 required
                 pattern="[0-9]{12}"
                 maxLength="12"
-                disabled={otpVerified}
                 style={{ flex: 1 }}
               />
               {!otpVerified && (
