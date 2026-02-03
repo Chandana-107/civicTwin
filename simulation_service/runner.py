@@ -1,4 +1,4 @@
-from .model import CivicModel
+from model import CivicModel
 import pandas as pd
 import concurrent.futures
 

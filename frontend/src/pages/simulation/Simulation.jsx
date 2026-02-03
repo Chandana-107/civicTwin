@@ -32,8 +32,8 @@ const Simulation = () => {
         setStatus('running');
         setResults(null);
         try {
-            // Assuming API is proxied or absolute for now. Using localhost directly.
-            const response = await axios.post('http://127.0.0.1:8000/simulate', config);
+            const simulationApiUrl = import.meta.env.VITE_SIMULATION_API_URL || 'http://localhost:8003';
+            const response = await axios.post(`${simulationApiUrl}/simulate`, config);
             setSimulationId(response.data.simulation_id);
             toast.success('Simulation started!');
         } catch (error) {
@@ -49,7 +49,8 @@ const Simulation = () => {
         if (simulationId && status === 'running') {
             interval = setInterval(async () => {
                 try {
-                    const response = await axios.get(`http://127.0.0.1:8000/results/${simulationId}`);
+                    const simulationApiUrl = import.meta.env.VITE_SIMULATION_API_URL || 'http://localhost:8003';
+                    const response = await axios.get(`${simulationApiUrl}/results/${simulationId}`);
                     const data = response.data;
                     if (data.status === 'completed') {
                         setResults(data.results);

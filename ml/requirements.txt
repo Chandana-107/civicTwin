@@ -42,3 +42,8 @@ requests==2.31.0
 # Deployment optional
 # -----------------------
 gunicorn==21.2.0
+
+# -----------------------
+# Mesa ABM Simulation
+# -----------------------
+mesa==3.1.1

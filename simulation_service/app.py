@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional
 import uuid
 import concurrent.futures
-from .runner import run_single_simulation
+from runner import run_single_simulation
 
 app = FastAPI(title="CivicTwin Simulation Service")
 
@@ -65,7 +65,7 @@ async def get_results(simulation_id: str):
     return simulation_store[simulation_id]
 
 # Fraud Graph Analysis Endpoint
-from .fraud_graph import analyze_fraud_graph
+from fraud_graph import analyze_fraud_graph
 
 class GraphData(BaseModel):
     nodes: list

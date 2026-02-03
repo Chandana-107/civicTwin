@@ -1,6 +1,6 @@
 from mesa import Model
 from mesa.datacollection import DataCollector
-from .agents import CitizenAgent
+from agents import CitizenAgent
 
 def compute_avg_satisfaction(model):
     # In Mesa 3.x, model.agents is an AgentSet or list-like
