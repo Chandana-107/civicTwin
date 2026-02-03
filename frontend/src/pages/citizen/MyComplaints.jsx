@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import './Citizen.css';
 
 const MyComplaints = () => {
     const navigate = useNavigate();
@@ -42,18 +43,18 @@ const MyComplaints = () => {
     };
 
     return (
-        <div className="container" style={{ padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ color: 'var(--primary-color)' }}>My Complaints</h2>
-                <div style={{ display: 'flex', gap: '1rem' }}>
+        <div className="complaints-container">
+            <div className="complaints-header">
+                <h2>📋 My Complaints</h2>
+                <div className="complaints-actions">
                     <button
                         onClick={fetchComplaints}
-                        className="btn btn-outline"
+                        className="btn btn-secondary"
                         disabled={loading}
                     >
                         {loading ? '↻ Refreshing...' : '🔄 Refresh'}
                     </button>
-                    <button onClick={() => navigate('/citizen/dashboard')} className="btn btn-outline">Back to Dashboard</button>
+                    <button onClick={() => navigate('/citizen/dashboard')} className="btn btn-outline">← Dashboard</button>
                     <button onClick={() => navigate('/citizen/file-complaint')} className="btn btn-primary">+ New Complaint</button>
                 </div>
             </div>
@@ -61,43 +62,28 @@ const MyComplaints = () => {
             {loading ? (
                 <div className="loading"><div className="spinner"></div></div>
             ) : complaints.length === 0 ? (
-                <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-                    <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>No complaints found.</p>
+                <div className="empty-state">
+                    <p>📭 No complaints found. Start by filing your first complaint!</p>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gap: '1rem' }}>
+                <div className="complaints-grid">
                     {complaints.map(complaint => (
-                        <div key={complaint.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h3 style={{ margin: 0, color: 'var(--primary-dark)' }}>{complaint.title}</h3>
-                                <span style={{
-                                    padding: '0.25rem 0.75rem',
-                                    borderRadius: '999px',
-                                    backgroundColor: getStatusColor(complaint.status),
-                                    color: 'white',
-                                    fontSize: '0.85rem',
-                                    fontWeight: 'bold'
-                                }}>
+                        <div key={complaint.id} className="complaint-card">
+                            <div className="complaint-header">
+                                <h3 className="complaint-title">{complaint.title}</h3>
+                                <span className={`status-badge ${(complaint.status || 'open').toLowerCase().replace(' ', '_')}`}>
                                     {(complaint.status || 'OPEN').toUpperCase()}
                                 </span>
                             </div>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                Warning: ID {complaint.id} • {new Date(complaint.created_at).toLocaleDateString()}
+                            <p className="complaint-meta">
+                                🆔 ID {complaint.id} • 📅 {new Date(complaint.created_at).toLocaleDateString()}
                             </p>
-                            <p>{complaint.text}</p>
+                            <p className="complaint-text">{complaint.text}</p>
                             {complaint.location_address && (
-                                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>📍 {complaint.location_address}</p>
+                                <p className="complaint-location">📍 {complaint.location_address}</p>
                             )}
                             {complaint.category && (
-                                <span style={{
-                                    alignSelf: 'flex-start',
-                                    background: 'var(--light-bg)',
-                                    color: 'var(--text-secondary)',
-                                    padding: '0.2rem 0.5rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.8rem',
-                                    border: '1px solid var(--border-color)'
-                                }}>
+                                <span className="complaint-category">
                                     {complaint.category}
                                 </span>
                             )}

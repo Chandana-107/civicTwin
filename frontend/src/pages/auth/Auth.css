@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #213555;
+  background: linear-gradient(135deg, #1E3150 0%, #5377A2 100%);
   padding: 1rem;
 }
 
@@ -13,38 +13,50 @@
   padding: 2.5rem;
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(30, 49, 80, 0.3);
+  border-top: 4px solid #E5D38A;
 }
 
 .auth-header {
   text-align: center;
   margin-bottom: 2rem;
+  position: relative;
+}
+
+.auth-header::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #E5D38A 0%, #5377A2 100%);
+  margin: 1rem auto 0;
+  border-radius: 2px;
 }
 
 .auth-header h1 {
   font-size: 2rem;
   font-weight: 700;
-  color: #4F709C;
+  color: #1E3150;
   font-family: 'Playfair Display', serif;
   margin-bottom: 0.5rem;
 }
 
 .auth-header p {
-  color: var(--text-secondary);
+  color: #5377A2;
   font-size: 0.875rem;
 }
 
 .auth-title {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #4F709C;
+  color: #1E3150;
   font-family: 'Playfair Display', serif;
   margin-bottom: 0.5rem;
   text-align: center;
 }
 
 .auth-subtitle {
-  color: var(--text-secondary);
+  color: #5377A2;
   text-align: center;
   margin-bottom: 2rem;
 }
@@ -60,30 +72,31 @@
 }
 
 .auth-link {
-  color: var(--primary-color);
+  color: #5377A2;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.875rem;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .auth-link:hover {
-  color: var(--primary-dark);
+  color: #1E3150;
   text-decoration: underline;
 }
 
 .auth-link-button {
   background: none;
   border: none;
-  color: var(--primary-color);
+  color: #5377A2;
   font-weight: 500;
   cursor: pointer;
   font-size: 0.875rem;
   padding: 0;
+  transition: all 0.3s ease;
 }
 
 .auth-link-button:hover {
-  color: var(--primary-dark);
+  color: #1E3150;
   text-decoration: underline;
 }
 
@@ -118,8 +131,9 @@
 }
 
 .countdown-text {
-  color: var(--text-secondary);
+  color: #5377A2;
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
 /* Responsive */

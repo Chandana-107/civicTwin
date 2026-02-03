@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import './Citizen.css';
 
 const FileComplaint = () => {
     const navigate = useNavigate();
@@ -77,9 +78,9 @@ const FileComplaint = () => {
     };
 
     return (
-        <div className="container" style={{ padding: '2rem' }}>
-            <div className="card" style={{ maxWidth: '600px', margin: '0 auto' }}>
-                <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-color)' }}>File a Complaint</h2>
+        <div className="complaint-form-container">
+            <div className="complaint-form-card">
+                <h2>📝 File a Complaint</h2>
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
@@ -108,7 +109,7 @@ const FileComplaint = () => {
 
                     <div className="form-group">
                         <label className="form-label">Location</label>
-                        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <div className="location-button-group">
                             <button
                                 type="button"
                                 className="btn btn-outline"
@@ -117,7 +118,7 @@ const FileComplaint = () => {
                                 📍 Get My Location
                             </button>
                             {location.lat && (
-                                <span style={{ fontSize: '0.9rem', color: 'var(--success-color)' }}>
+                                <span className="location-success">
                                     ✓ {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                                 </span>
                             )}
@@ -144,7 +145,7 @@ const FileComplaint = () => {
                         />
                     </div>
 
-                    <div className="form-group" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <div className="consent-checkbox-group">
                         <input
                             type="checkbox"
                             name="consent_given"
@@ -152,12 +153,12 @@ const FileComplaint = () => {
                             checked={formData.consent_given}
                             onChange={handleChange}
                         />
-                        <label htmlFor="consent" style={{ cursor: 'pointer' }}>
-                            I consent to share this data for analysis.
+                        <label htmlFor="consent">
+                            I consent to share this data for analysis and agree to help improve civic services.
                         </label>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
+                    <div className="form-actions">
                         <button
                             type="button"
                             className="btn btn-outline"
@@ -169,7 +170,6 @@ const FileComplaint = () => {
                             type="submit"
                             className="btn btn-primary"
                             disabled={loading}
-                            style={{ flex: 1 }}
                         >
                             {loading ? 'Submitting...' : 'Submit Complaint'}
                         </button>

@@ -32,7 +32,7 @@ const Simulation = () => {
         setStatus('running');
         setResults(null);
         try {
-            const simulationApiUrl = import.meta.env.VITE_SIMULATION_API_URL || 'http://localhost:8003';
+            const simulationApiUrl = import.meta.env.VITE_SIMULATION_API_URL;
             const response = await axios.post(`${simulationApiUrl}/simulate`, config);
             setSimulationId(response.data.simulation_id);
             toast.success('Simulation started!');
@@ -49,7 +49,7 @@ const Simulation = () => {
         if (simulationId && status === 'running') {
             interval = setInterval(async () => {
                 try {
-                    const simulationApiUrl = import.meta.env.VITE_SIMULATION_API_URL || 'http://localhost:8003';
+                    const simulationApiUrl = import.meta.env.VITE_SIMULATION_API_URL;
                     const response = await axios.get(`${simulationApiUrl}/results/${simulationId}`);
                     const data = response.data;
                     if (data.status === 'completed') {
