@@ -154,8 +154,23 @@ router.post("/run", auth, async (req, res) => {
       const edge_density = Math.min(1, (clusterNodes.length > 1 ? (tenderCount /
         (clusterNodes.length * (clusterNodes.length - 1))) : 0));
       const suspiciousness_score = Math.min(1, Math.log10(1 + total_amount) / 6 + edge_density / 2);
+      
+      // Build node details with names for graph visualization
+      const nodeDetails = {};
+      for (const cid of clusterNodes) {
+        nodeDetails[cid] = {
+          id: cid,
+          name: adj[cid].contractor || cid,
+          type: 'contractor'
+        };
+      }
+      
       clusters.push({
-        cluster_nodes: clusterNodes, suspiciousness_score, total_amount, edge_density,
+        cluster_nodes: clusterNodes, 
+        node_details: nodeDetails,
+        suspiciousness_score, 
+        total_amount, 
+        edge_density,
         evidence: { reason: "shared phone/address/beneficiary" }
       });
       visited.add(a);
@@ -166,7 +181,10 @@ router.post("/run", auth, async (req, res) => {
       await pool.query(`INSERT INTO fraud_clusters 
   (id,cluster_nodes,suspiciousness_score,total_amount,edge_density,evidence,created_at) 
                           VALUES ($1,$2,$3,$4,$5,$6,now())`, [uuidv4(), JSON.stringify(c.cluster_nodes),
-      c.suspiciousness_score, c.total_amount, c.edge_density, JSON.stringify(c.evidence)]);
+      c.suspiciousness_score, c.total_amount, c.edge_density, JSON.stringify({
+        ...c.evidence,
+        node_details: c.node_details
+      })]);
     }
 
     // 5) CALL ML SERVICE FOR ADVANCED GRAPH ANALYSIS

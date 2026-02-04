@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import './Admin.css';
 
 // Fix for default marker icon in Leaflet with Webpack/Vite
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -46,17 +47,17 @@ const ComplaintMap = () => {
     const position = [12.9716, 77.5946]; // Bangalore coords as default
 
     return (
-        <div style={{ backgroundColor: '#4F709C', minHeight: '100vh', width: '100%' }}>
-            <div className="container" style={{ padding: '2rem', color: '#F0F0F0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h2 style={{ color: '#F0F0F0', fontFamily: "'Playfair Display', serif", fontSize: '2.5rem' }}>Complaint Map</h2>
-                    <button onClick={() => navigate('/admin/dashboard')} className="btn" style={{ backgroundColor: '#E5D283', color: '#1F2937', fontWeight: 'bold' }}>Back</button>
+        <div className="map-page">
+            <div className="container">
+                <div className="page-header">
+                    <h2>🗺️ Complaint Map</h2>
+                    <button onClick={() => navigate('/admin/dashboard')} className="btn btn-secondary">← Back</button>
                 </div>
 
                 {loading ? (
                     <div className="loading"><div className="spinner"></div></div>
                 ) : (
-                    <div className="card" style={{ height: '600px', padding: 0, overflow: 'hidden', color: 'var(--text-primary)' }}>
+                    <div className="map-container-card">
                         <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }}>
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

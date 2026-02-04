@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import './Admin.css';
 
 const ComplaintDetail = () => {
     const { id } = useParams();
@@ -65,90 +66,89 @@ const ComplaintDetail = () => {
     if (!complaint) return <div className="container" style={{ padding: '2rem' }}>Complaint not found.</div>;
 
     return (
-        <div style={{ backgroundColor: '#4F709C', minHeight: '100vh', width: '100%' }}>
-            <div className="container" style={{ padding: '2rem', color: '#F0F0F0' }}>
-                <button onClick={() => navigate('/admin/complaints')} className="btn" style={{ marginBottom: '1rem', backgroundColor: '#E5D283', color: '#1F2937', fontWeight: 'bold' }}>
-                    &larr; Back to List
+        <div className="detail-page">
+            <div className="container">
+                <button onClick={() => navigate('/admin/complaints')} className="btn btn-secondary" style={{ marginBottom: '1.5rem' }}>
+                    ← Back to List
                 </button>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+                <div className="detail-grid">
                     {/* Left Column: Details */}
                     <div>
-                        <div className="card" style={{ marginBottom: '2rem', color: 'var(--text-primary)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <h2 style={{ color: 'var(--primary-color)', marginTop: 0, fontFamily: "'Playfair Display', serif" }}>{complaint?.title || 'No Title'}</h2>
-                                <span style={{
-                                    padding: '0.5rem 1rem',
-                                    borderRadius: '999px',
+                        <div className="detail-main-card">
+                            <div className="detail-header">
+                                <h2 className="detail-title">{complaint?.title || 'No Title'}</h2>
+                                <span className="admin-status-badge" style={{
                                     backgroundColor:
-                                        (complaint?.status === 'resolved') ? 'var(--success-color)' :
-                                            (complaint?.status === 'rejected') ? 'var(--danger-color)' : 'var(--warning-color)',
-                                    color: 'white',
-                                    fontWeight: 'bold'
+                                        (complaint?.status === 'resolved') ? '#059669' :
+                                            (complaint?.status === 'rejected') ? '#DC2626' : '#D97706'
                                 }}>
                                     {(complaint?.status || 'Open').toUpperCase()}
                                 </span>
                             </div>
-                            <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>{complaint?.text || 'No description provided.'}</p>
+                            <p className="detail-description">{complaint?.text || 'No description provided.'}</p>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem', color: 'var(--text-secondary)' }}>
-                                <div>
-                                    <strong>Category:</strong> {complaint?.category || 'N/A'}
+                            <div className="detail-info-grid">
+                                <div className="detail-info-item">
+                                    <strong>Category</strong>
+                                    {complaint?.category || 'N/A'}
                                 </div>
-                                <div>
-                                    <strong>Priority:</strong> {complaint?.priority ? Number(complaint.priority).toFixed(2) : '0.00'}
+                                <div className="detail-info-item">
+                                    <strong>Priority</strong>
+                                    {complaint?.priority ? Number(complaint.priority).toFixed(2) : '0.00'}
                                 </div>
-                                <div>
-                                    <strong>Date:</strong> {complaint?.created_at ? new Date(complaint.created_at).toLocaleString() : 'N/A'}
+                                <div className="detail-info-item">
+                                    <strong>Date</strong>
+                                    {complaint?.created_at ? new Date(complaint.created_at).toLocaleString() : 'N/A'}
                                 </div>
-                                <div>
-                                    <strong>Location:</strong> {complaint?.location_address || ((complaint?.lat && complaint?.lng) ? `${complaint.lat}, ${complaint.lng}` : 'N/A')}
+                                <div className="detail-info-item">
+                                    <strong>Location</strong>
+                                    {complaint?.location_address || ((complaint?.lat && complaint?.lng) ? `${complaint.lat}, ${complaint.lng}` : 'N/A')}
                                 </div>
                             </div>
 
                             {complaint.attachment_url && (
-                                <div style={{ marginTop: '1rem' }}>
-                                    <strong>Attachment:</strong><br />
-                                    <img src={complaint.attachment_url} alt="Attachment" style={{ maxWidth: '100%', borderRadius: '0.5rem', marginTop: '0.5rem' }} />
+                                <div style={{ marginTop: '1.5rem' }}>
+                                    <strong style={{ color: '#1E3150', display: 'block', marginBottom: '0.75rem' }}>Attachment:</strong>
+                                    <img src={complaint.attachment_url} alt="Attachment" style={{ maxWidth: '100%', borderRadius: '0.75rem' }} />
                                 </div>
                             )}
-
-
                         </div>
 
-                        <div className="card" style={{ color: 'var(--text-primary)' }}>
-                            <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>Timeline & Notes</h3>
-                            <div style={{ marginTop: '1rem' }}>
+                        <div className="timeline-card">
+                            <h3>📋 Timeline & Notes</h3>
+                            <div>
                                 {timeline.map(item => (
-                                    <div key={item.id} style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border-color)' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                    <div key={item.id} className="timeline-item">
+                                        <div className="timeline-meta">
                                             <span>User ID: {item.user_id}</span>
                                             <span>{new Date(item.created_at).toLocaleString()}</span>
                                         </div>
-                                        <p style={{ margin: '0.5rem 0 0 0' }}>{item.text}</p>
+                                        <p className="timeline-text">{item.text}</p>
                                     </div>
                                 ))}
                             </div>
-                            <form onSubmit={handleAddNote} style={{ marginTop: '1rem' }}>
+                            <form onSubmit={handleAddNote} style={{ marginTop: '1.5rem' }}>
                                 <textarea
                                     className="form-input"
                                     placeholder="Add a note or update..."
                                     value={note}
                                     onChange={(e) => setNote(e.target.value)}
                                     required
+                                    rows="3"
                                 />
-                                <button type="submit" className="btn btn-secondary" style={{ marginTop: '0.5rem' }}>Add Note</button>
+                                <button type="submit" className="btn btn-primary" style={{ marginTop: '0.75rem' }}>Add Note</button>
                             </form>
                         </div>
                     </div>
 
                     {/* Right Column: Actions */}
                     <div>
-                        <div className="card" style={{ marginBottom: '2rem', color: 'var(--text-primary)' }}>
-                            <h3>Admin Actions</h3>
+                        <div className="actions-card">
+                            <h3>🛠️ Admin Actions</h3>
                             <div className="form-group">
                                 <label className="form-label">Update Status</label>
-                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <div className="status-update-group">
                                     <select
                                         className="form-input"
                                         value={status}
@@ -164,22 +164,22 @@ const ComplaintDetail = () => {
                             </div>
                         </div>
 
-                        <div className="card" style={{ color: 'var(--text-primary)' }}>
-                            <h3>AI Analysis</h3>
-                            <div style={{ marginBottom: '1rem' }}>
-                                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Predicted Labels</h4>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-                                    <span style={{ background: 'var(--light-bg)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.85rem' }}>
+                        <div className="ai-analysis-card">
+                            <h3>🤖 AI Analysis</h3>
+                            <div style={{ marginBottom: '1.5rem' }}>
+                                <h4 className="ai-section-title">Predicted Labels</h4>
+                                <div className="label-tags">
+                                    <span className="label-tag">
                                         {complaint.category} ({(complaint.priority * 100).toFixed(0)}%)
                                     </span>
                                 </div>
                             </div>
                             {labels.length > 0 && (
                                 <div>
-                                    <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Human Labels</h4>
+                                    <h4 className="ai-section-title">Human Labels</h4>
                                     {labels.map(l => (
-                                        <div key={l.id} style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
-                                            {l.category} - {new Date(l.created_at).toLocaleDateString()}
+                                        <div key={l.id} style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: '#5377A2' }}>
+                                            • {l.category} - {new Date(l.created_at).toLocaleDateString()}
                                         </div>
                                     ))}
                                 </div>

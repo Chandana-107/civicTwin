@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import './Admin.css';
 
 const SentimentDashboard = () => {
     const navigate = useNavigate();
@@ -63,10 +64,10 @@ const SentimentDashboard = () => {
     };
 
     return (
-        <div style={{ backgroundColor: '#4F709C', minHeight: '100vh', width: '100%' }}>
-            <div className="container" style={{ padding: '2rem', color: '#F0F0F0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                    <h2 style={{ color: '#F0F0F0', fontFamily: "'Playfair Display', serif", fontSize: '2.5rem' }}>Citizen Mood Monitoring</h2>
+        <div className="sentiment-page">
+            <div className="container">
+                <div className="page-header">
+                    <h2>📊 Citizen Mood Monitoring</h2>
                     <div style={{ display: 'flex', gap: '1rem' }}>
                         <button onClick={runDailyAnalysis} className="btn btn-secondary">Run Daily Analysis</button>
                         <button
@@ -107,7 +108,7 @@ const SentimentDashboard = () => {
 
                     {/* LEFT: SOCIAL FEED */}
                     <div>
-                        <h3 style={{ marginBottom: '1rem', borderBottom: '2px solid #E5D283', paddingBottom: '0.5rem', color: '#F0F0F0' }}>Live Feed & Sentiment</h3>
+                        <h3 style={{ marginBottom: '1.5rem', borderBottom: '2px solid #1E3150', paddingBottom: '0.75rem', color: '#1E3150', fontFamily: "'Playfair Display', serif" }}>Live Feed & Sentiment</h3>
                         {loading ? (
                             <div className="loading"><div className="spinner"></div></div>
                         ) : posts.length === 0 ? (
