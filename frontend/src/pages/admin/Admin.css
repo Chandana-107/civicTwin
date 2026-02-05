@@ -494,7 +494,17 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   height: 600px;
+  width: 100%;
   padding: 0;
+  position: relative;
+  display: block;
+}
+
+.map-container-card .leaflet-container {
+  height: 600px !important;
+  width: 100% !important;
+  border-radius: 1rem;
+  z-index: 1;
 }
 
 /* Fraud Dashboard Styles */

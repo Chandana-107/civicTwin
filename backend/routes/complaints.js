@@ -43,16 +43,20 @@ router.get("/", auth, async (req, res) => {
   if (status) { filters.push(`status=$${i++}`); params.push(status); } 
   if (category) { filters.push(`category=$${i++}`); params.push(category); } 
   const where = filters.length ? `WHERE ${filters.join(" AND ")}` : ""; 
-  const sql = `SELECT id,title,text,category,priority,status,assigned_to,created_at, 
-               ST_X(location_geometry::geometry) AS lng, ST_Y(location_geometry::geometry) AS lat 
-               FROM complaints ${where} ORDER BY created_at DESC LIMIT $${i++} OFFSET 
-$${i++}`; 
+  const sql = `SELECT id, user_id, title, text, category, priority, status, assigned_to, created_at, 
+               ST_X(location_geometry::geometry) AS lng, 
+               ST_Y(location_geometry::geometry) AS lat 
+               FROM complaints ${where} ORDER BY created_at DESC LIMIT $${i++} OFFSET $${i++}`; 
   params.push(limit, offset); 
   try { 
     const r = await pool.query(sql, params); 
+    console.log('Complaints query result:', r.rows.length, 'rows'); 
+    if (r.rows.length > 0) {
+      console.log('Sample complaint:', { id: r.rows[0].id, lat: r.rows[0].lat, lng: r.rows[0].lng });
+    }
     res.json({ data: r.rows, page: Number(page) }); 
   } catch (err) { 
-    console.error(err); 
+    console.error('Complaints query error:', err); 
     res.status(500).json({ error: "DB error" }); 
   } 
 }); 
@@ -61,9 +65,10 @@ $${i++}`;
 router.get("/:id", auth, async (req, res) => { 
   const id = req.params.id; 
   try { 
-    const r = await pool.query(`SELECT id,title,text,category,priority,status,assigned_to,created_at, 
-      ST_X(location_geometry::geometry) AS lng, ST_Y(location_geometry::geometry) AS lat, 
-attachment_url, location_address 
+    const r = await pool.query(`SELECT id, user_id, title, text, category, priority, status, assigned_to, created_at, 
+      ST_X(location_geometry::geometry) AS lng, 
+      ST_Y(location_geometry::geometry) AS lat, 
+      attachment_url, location_address 
       FROM complaints WHERE id=$1`, [id]); 
     if (!r.rows.length) return res.status(404).json({ error: "Not found" }); 
     // fetch labels & notes 

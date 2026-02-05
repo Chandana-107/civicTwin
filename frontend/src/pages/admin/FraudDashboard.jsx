@@ -12,6 +12,7 @@ const FraudDashboard = () => {
     const [flags, setFlags] = useState([]);
     const [clusters, setClusters] = useState([]);
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+    const [contractorNames, setContractorNames] = useState({}); // Store contractor ID to name mapping
     const [loading, setLoading] = useState(false);
     const [processing, setProcessing] = useState(false);
 
@@ -28,6 +29,35 @@ const FraudDashboard = () => {
             ]);
             setFlags(flagsRes.data || []);
             setClusters(clustersRes.data || []);
+
+            // Collect all unique contractor IDs from clusters
+            const contractorIds = new Set();
+            (clustersRes.data || []).forEach(cluster => {
+                try {
+                    const members = typeof cluster.cluster_nodes === 'string' 
+                        ? JSON.parse(cluster.cluster_nodes) 
+                        : (cluster.cluster_nodes || []);
+                    members.forEach(m => contractorIds.add(m));
+                } catch (err) {
+                    console.error('Error parsing cluster nodes:', err);
+                }
+            });
+            console.log('Contractor IDs from clusters:', Array.from(contractorIds));
+
+            // Fetch contractor names from tenders using specific endpoint
+            const contractorNames = {};
+            if (contractorIds.size > 0) {
+                try {
+                    const response = await api.post('/tenders/contractor-names', {
+                        contractor_ids: Array.from(contractorIds)
+                    });
+                    Object.assign(contractorNames, response.data);
+                    console.log('Fetched contractor names:', Object.keys(contractorNames).length, 'out of', contractorIds.size);
+                    console.log('Sample names:', Object.entries(contractorNames).slice(0, 3));
+                } catch (err) {
+                    console.error('Error fetching contractor names:', err);
+                }
+            }
 
             // Synthesize Graph Data from Clusters
             const nodes = new Map(); // Use Map to store node details
@@ -49,9 +79,11 @@ const FraudDashboard = () => {
                     
                     members.forEach(m => {
                         if (!nodes.has(m)) {
+                            // Priority: node_details from evidence > fetched name > "Unknown Contractor"
+                            const name = nodeDetails[m]?.name || contractorNames[m] || `Contractor ${m.substring(0, 6)}`;
                             nodes.set(m, {
                                 id: m,
-                                name: nodeDetails[m]?.name || m.substring(0, 8), // Use name or first 8 chars of ID
+                                name: name,
                                 type: nodeDetails[m]?.type || 'contractor'
                             });
                         }
@@ -67,10 +99,13 @@ const FraudDashboard = () => {
                     console.error('Error parsing cluster for graph:', err, cluster);
                 }
             });
-            setGraphData({
+            const graphDataResult = {
                 nodes: Array.from(nodes.values()).map(node => ({ ...node, group: 1 })),
                 links
-            });
+            };
+            console.log('Graph data nodes:', graphDataResult.nodes.slice(0, 5)); // Log first 5 nodes
+            setGraphData(graphDataResult);
+            setContractorNames(contractorNames); // Store for cluster display
 
         } catch (error) {
             console.error(error);
@@ -349,7 +384,8 @@ const FraudDashboard = () => {
                                                     <strong>Connected Entities:</strong> {(() => {
                                                         const nodeDetails = evidence?.node_details || {};
                                                         return nodes.map(nodeId => {
-                                                            return nodeDetails[nodeId]?.name || nodeId.substring(0, 8) + '...';
+                                                            // Priority: node_details from evidence > contractorNames state > shortened ID
+                                                            return nodeDetails[nodeId]?.name || contractorNames[nodeId] || nodeId.substring(0, 8) + '...';
                                                         }).join(', ');
                                                     })()}
                                                 </p>
@@ -377,37 +413,76 @@ const FraudDashboard = () => {
                             <>
                                 <div style={{ marginBottom: '1rem', padding: '1rem', background: 'linear-gradient(135deg, #F0F4FF 0%, #FFF8F0 100%)', borderRadius: '0.5rem', border: '1px solid #5377A2' }}>
                                     <h3 style={{ margin: '0 0 0.5rem 0', color: '#1E3150', fontSize: '1.1rem', fontFamily: "'Playfair Display', serif" }}>
-                                        🗺️ Corruption Network Visualization
+                                        🗺️ Corruption Network Visualization - Interactive Crime Map
                                     </h3>
                                     <p style={{ margin: 0, fontSize: '0.9rem', color: '#5377A2', lineHeight: '1.5' }}>
-                                        This "crime map" shows how contractors and companies are connected through shared contacts, addresses, and beneficiaries. 
-                                        Connected nodes (dots) indicate potential collusion. Lines show relationships between entities. 
-                                        <strong> Drag to explore the network.</strong>
+                                        This interactive "crime map" visualizes how contractors are connected through shared contacts, addresses, and beneficiaries. 
+                                        Each <strong style={{ color: '#601A35' }}>red node</strong> is a contractor/company. <strong>Lines</strong> show suspicious relationships. 
+                                        <strong style={{ color: '#1E3150' }}> • Drag nodes to reorganize • Scroll to zoom • Click and drag background to pan</strong>
                                     </p>
                                 </div>
-                                <div className="card" style={{ height: '600px', cursor: 'move', color: 'var(--text-primary)' }}>
+                                <div className="card" style={{ height: '700px', cursor: 'move', color: 'var(--text-primary)' }}>
                                     <ForceGraph2D
                                         graphData={graphData}
                                         nodeLabel={node => node.name || node.id}
                                         nodeAutoColorBy="group"
-                                        linkDirectionalParticles={2}
-                                        linkDirectionalParticleSpeed={d => 0.005}
+                                        nodeRelSize={8}
+                                        linkWidth={2}
+                                        linkColor={() => 'rgba(83, 119, 162, 0.3)'}
+                                        linkDirectionalParticles={3}
+                                        linkDirectionalParticleWidth={3}
+                                        linkDirectionalParticleSpeed={d => 0.003}
+                                        d3AlphaDecay={0.01}
+                                        d3VelocityDecay={0.2}
+                                        cooldownTime={3000}
+                                        enableNodeDrag={true}
+                                        enableZoomInteraction={true}
+                                        enablePanInteraction={true}
+                                        nodeCanvasObjectMode={() => 'after'}
                                         nodeCanvasObject={(node, ctx, globalScale) => {
-                                            const label = node.name || node.id; // Use name if available
-                                            const fontSize = 12 / globalScale;
-                                            ctx.font = `${fontSize}px Sans-Serif`;
+                                            const label = node.name || node.id;
+                                            const fontSize = 14 / globalScale;
+                                            const nodeRadius = 8;
+                                            
+                                            // Draw node circle
+                                            ctx.beginPath();
+                                            ctx.arc(node.x, node.y, nodeRadius, 0, 2 * Math.PI, false);
+                                            ctx.fillStyle = node.color || '#601A35';
+                                            ctx.fill();
+                                            ctx.strokeStyle = '#fff';
+                                            ctx.lineWidth = 2 / globalScale;
+                                            ctx.stroke();
+                                            
+                                            // Draw label with background
+                                            ctx.font = `bold ${fontSize}px Arial`;
                                             const textWidth = ctx.measureText(label).width;
-                                            const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+                                            const bckgDimensions = [textWidth + fontSize * 0.4, fontSize * 1.4];
 
-                                            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                                            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+                                            // Label background
+                                            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+                                            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                                            ctx.shadowBlur = 4;
+                                            ctx.shadowOffsetX = 1;
+                                            ctx.shadowOffsetY = 1;
+                                            ctx.fillRect(
+                                                node.x - bckgDimensions[0] / 2, 
+                                                node.y + nodeRadius + 4 - bckgDimensions[1] / 2, 
+                                                ...bckgDimensions
+                                            );
+                                            
+                                            // Reset shadow
+                                            ctx.shadowColor = 'transparent';
+                                            ctx.shadowBlur = 0;
+                                            ctx.shadowOffsetX = 0;
+                                            ctx.shadowOffsetY = 0;
 
+                                            // Label text
                                             ctx.textAlign = 'center';
                                             ctx.textBaseline = 'middle';
-                                            ctx.fillStyle = node.color || '#3b82f6';
-                                            ctx.fillText(label, node.x, node.y);
+                                            ctx.fillStyle = '#1E3150';
+                                            ctx.fillText(label, node.x, node.y + nodeRadius + 4);
 
-                                            node.__bckgDimensions = bckgDimensions; // to re-use in nodePointerAreaPaint
+                                            node.__bckgDimensions = bckgDimensions;
                                         }}
                                     />
                                 </div>

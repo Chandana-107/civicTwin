@@ -80,8 +80,9 @@ const ComplaintDetail = () => {
                                 <h2 className="detail-title">{complaint?.title || 'No Title'}</h2>
                                 <span className="admin-status-badge" style={{
                                     backgroundColor:
-                                        (complaint?.status === 'resolved') ? '#059669' :
-                                            (complaint?.status === 'rejected') ? '#DC2626' : '#D97706'
+                                        (complaint?.status === 'resolved') ? '#28a745' :
+                                            (complaint?.status === 'in_progress') ? '#5377A2' : '#601A35',
+                                    color: '#FFFFFF'
                                 }}>
                                     {(complaint?.status || 'Open').toUpperCase()}
                                 </span>
@@ -157,7 +158,6 @@ const ComplaintDetail = () => {
                                         <option value="open">Open</option>
                                         <option value="in_progress">In Progress</option>
                                         <option value="resolved">Resolved</option>
-                                        <option value="closed">Closed</option>
                                     </select>
                                     <button onClick={handleStatusUpdate} className="btn btn-primary">Update</button>
                                 </div>

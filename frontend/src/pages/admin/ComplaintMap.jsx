@@ -29,8 +29,10 @@ const ComplaintMap = () => {
         const fetchComplaints = async () => {
             try {
                 const response = await api.get('/complaints');
+                console.log('Fetched complaints:', response.data.data);
                 // Filter complaints that have location data
                 const validComplaints = (response.data.data || []).filter(c => c.lat && c.lng);
+                console.log('Valid complaints with location:', validComplaints);
                 setComplaints(validComplaints);
             } catch (error) {
                 console.error('Error fetching complaints for map:', error);
@@ -56,9 +58,18 @@ const ComplaintMap = () => {
 
                 {loading ? (
                     <div className="loading"><div className="spinner"></div></div>
+                ) : complaints.length === 0 ? (
+                    <div className="map-container-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <p style={{ color: '#5377A2', fontSize: '1.2rem' }}>No complaints with location data found.</p>
+                    </div>
                 ) : (
                     <div className="map-container-card">
-                        <MapContainer center={position} zoom={13} style={{ height: '100%', width: '100%' }}>
+                        <MapContainer 
+                            center={position} 
+                            zoom={13} 
+                            style={{ height: '600px', width: '100%' }}
+                            scrollWheelZoom={true}
+                        >
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -66,16 +77,16 @@ const ComplaintMap = () => {
                             {complaints.map(complaint => (
                                 <Marker key={complaint.id} position={[complaint.lat, complaint.lng]}>
                                     <Popup>
-                                        <div style={{ minWidth: '200px', color: 'var(--text-primary)' }}>
-                                            <h4 style={{ margin: '0 0 5px 0', color: 'var(--primary-color)' }}>{complaint.title}</h4>
+                                        <div style={{ minWidth: '200px', color: '#1E3150' }}>
+                                            <h4 style={{ margin: '0 0 5px 0', color: '#1E3150' }}>{complaint.title}</h4>
                                             <p style={{ margin: '0 0 10px 0', fontSize: '0.9rem' }}>{complaint.category}</p>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <span style={{
                                                     fontSize: '0.8rem',
                                                     padding: '2px 6px',
                                                     borderRadius: '4px',
-                                                    background: 'var(--light-bg)',
-                                                    border: '1px solid var(--border-color)'
+                                                    background: '#F1F1F1',
+                                                    border: '1px solid #E5D38A'
                                                 }}>
                                                     {complaint.status}
                                                 </span>
@@ -84,7 +95,7 @@ const ComplaintMap = () => {
                                                     style={{
                                                         background: 'none',
                                                         border: 'none',
-                                                        color: 'var(--primary-color)',
+                                                        color: '#1E3150',
                                                         cursor: 'pointer',
                                                         textDecoration: 'underline',
                                                         fontSize: '0.9rem'

@@ -42,13 +42,22 @@ const ComplaintList = () => {
     };
 
     const getStatusColor = (status) => {
-        if (!status) return 'var(--text-secondary)';
+        if (!status) return '#E5D38A';
         switch (status.toLowerCase()) {
-            case 'open': return 'var(--primary-color)';
-            case 'in_progress': return 'var(--info-color)';
-            case 'resolved': return 'var(--success-color)';
-            case 'closed': return 'var(--text-secondary)';
-            default: return 'var(--text-secondary)';
+            case 'open': return '#601A35';
+            case 'in_progress': return '#5377A2';
+            case 'resolved': return '#28a745';
+            default: return '#E5D38A';
+        }
+    };
+
+    const getStatusTextColor = (status) => {
+        if (!status) return '#1E3150';
+        switch (status.toLowerCase()) {
+            case 'open': return '#FFFFFF';
+            case 'in_progress': return '#FFFFFF';
+            case 'resolved': return '#FFFFFF';
+            default: return '#1E3150';
         }
     };
 
@@ -66,9 +75,9 @@ const ComplaintList = () => {
                             <label className="form-label">Status</label>
                             <select name="status" className="form-input" value={filters.status} onChange={handleFilterChange}>
                                 <option value="">All Statuses</option>
-                                <option value="pending">Pending</option>
+                                <option value="open">Open</option>
+                                <option value="in_progress">In Progress</option>
                                 <option value="resolved">Resolved</option>
-                                <option value="rejected">Rejected</option>
                             </select>
                         </div>
                         <div className="form-group" style={{ marginBottom: 0 }}>
@@ -101,7 +110,8 @@ const ComplaintList = () => {
                                         <span className="complaint-user-id">From User ID: {complaint.user_id}</span>
                                     </div>
                                     <span className="admin-status-badge" style={{
-                                        backgroundColor: getStatusColor(complaint.status)
+                                        backgroundColor: getStatusColor(complaint.status),
+                                        color: getStatusTextColor(complaint.status)
                                     }}>
                                         {complaint.status.toUpperCase()}
                                     </span>

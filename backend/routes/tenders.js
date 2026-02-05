@@ -50,6 +50,37 @@ $${i++}`;
     res.status(500).json({ error: "DB error" }); 
   } 
 }); 
+
+// Get contractor names by IDs (for fraud detection)
+router.post("/contractor-names", auth, async (req, res) => {
+  try {
+    const { contractor_ids } = req.body;
+    if (!contractor_ids || !Array.isArray(contractor_ids)) {
+      return res.status(400).json({ error: "contractor_ids array required" });
+    }
+    
+    // Get distinct contractor names for these IDs
+    const r = await pool.query(
+      `SELECT DISTINCT contractor_id, contractor 
+       FROM tenders 
+       WHERE contractor_id = ANY($1) AND contractor_id IS NOT NULL`,
+      [contractor_ids]
+    );
+    
+    // Build a map of contractor_id -> contractor name
+    const mapping = {};
+    r.rows.forEach(row => {
+      if (row.contractor_id && row.contractor) {
+        mapping[row.contractor_id] = row.contractor;
+      }
+    });
+    
+    res.json(mapping);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "DB error" });
+  }
+});
  
 // Get tender 
 router.get("/:id", auth, async (req, res) => { 
