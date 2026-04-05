@@ -209,7 +209,7 @@ function mountABMWidget() {
 
   const header = document.createElement('header');
   header.className = 'abm-chat-header';
-  header.innerHTML = '<span>CivicTwin ABM Assistant</span>';
+  header.innerHTML = '<span>CivicTwin Rasa Assistant</span>';
 
   const close = document.createElement('button');
   close.type = 'button';
@@ -236,7 +236,7 @@ function mountABMWidget() {
 
   const note = document.createElement('p');
   note.className = 'abm-chat-note';
-  note.textContent = 'Try: Run simulation for 50 steps, What is unemployment now?';
+  note.textContent = 'Ask anything about complaints, profile, or simulation insights.';
 
   inputWrap.appendChild(input);
   inputWrap.appendChild(send);
@@ -255,7 +255,7 @@ function mountABMWidget() {
     history = [
       {
         role: 'bot',
-        text: 'Hello. I can run the Mesa ABM and explain unemployment, income, migration, and rent trends.'
+        text: 'Hello. I am your CivicTwin Rasa assistant. Ask me about complaints, profile details, and simulation insights.'
       }
     ];
     clearHistory();

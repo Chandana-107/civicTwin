@@ -58,6 +58,18 @@ def answer_db_question(
     if not lowered:
         return None, None
 
+    explicit_db_terms = [
+        "database", "data", "records", "analytics", "stats", "summary", "count", "total", "how many",
+        "top", "recent", "latest", "priority", "resolved", "closed", "in progress", "open complaints",
+    ]
+    website_profile_terms = [
+        "website", "page", "pages", "route", "dashboard", "login", "signup", "otp",
+        "profile", "account", "admin profile", "citizen profile", "my profile",
+    ]
+
+    if _contains_any(lowered, website_profile_terms) and not _contains_any(lowered, explicit_db_terms):
+        return None, None
+
     db_words = [
         "database",
         "data",
@@ -73,8 +85,6 @@ def answer_db_question(
         "recent",
         "latest",
         "priority",
-        "complaint",
-        "user",
     ]
 
     if not _contains_any(lowered, db_words):
