@@ -5,7 +5,12 @@ from __future__ import annotations
 from mesa import Model
 from mesa.datacollection import DataCollector
 
-from abm_agents import Firm, Government, Household, Worker
+try:
+    # Package import path when imported as simulation_service.abm_model
+    from .abm_agents import Firm, Government, Household, Worker
+except ImportError:
+    # Direct module import path when running from simulation_service directory
+    from abm_agents import Firm, Government, Household, Worker
 
 
 class CivicABMModel(Model):

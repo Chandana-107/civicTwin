@@ -120,7 +120,7 @@ def answer_website_question_with_intent(message: str) -> Tuple[Optional[str], Op
     if _contains_any(lowered, ["api", "endpoint", "backend"]):
         return "api_endpoints", (
             "Key simulation service endpoints are /simulate and /results/{id} for the legacy flow, "
-            "/abm/simulate and /abm/results/{id} for Mesa ABM, and /chat for conversational insights."
+            "/abm/simulate and /abm/results/{id} for Mesa ABM, while conversational insights are served from the chatbot /chat endpoint."
         )
 
     if _contains_any(lowered, ["what is civictwin", "about website", "project overview"]):

@@ -1,20 +1,17 @@
-import './abmChatbotWidget.css';
+import './rasaChatbotWidget.css';
 
-const STORAGE_KEY = 'civicTwinABMChatHistory';
+const STORAGE_KEY = 'civicTwinRasaChatHistory';
 const COMPLAINT_CACHE_KEY = 'civicTwinComplaintContextCache';
 
-function getSimulationBaseUrl() {
-  return import.meta.env.VITE_SIMULATION_API_URL || 'http://localhost:8001';
-}
-
 function getCandidateBaseUrls() {
-  const envUrl = import.meta.env.VITE_SIMULATION_API_URL;
+  const envUrl = import.meta.env.VITE_CHATBOT_API_URL;
   const urls = [];
 
   if (envUrl) {
     urls.push(envUrl);
   }
 
+  urls.push('http://localhost:8002');
   urls.push('http://localhost:8001');
   urls.push('http://localhost:8000');
 
@@ -66,10 +63,10 @@ function saveComplaintCache(complaints) {
 
 function makeRow(role, text) {
   const row = document.createElement('div');
-  row.className = `abm-chat-row ${role}`;
+  row.className = `rasa-chat-row ${role}`;
 
   const bubble = document.createElement('div');
-  bubble.className = 'abm-chat-bubble';
+  bubble.className = 'rasa-chat-bubble';
   bubble.textContent = text;
 
   row.appendChild(bubble);
@@ -188,54 +185,54 @@ async function sendChatMessage(message) {
   }
 
   throw new Error(
-    `Unable to reach simulation service. Checked: ${candidateUrls.join(', ')}. ${lastError ? String(lastError.message || lastError) : ''}`
+    `Unable to reach chatbot service. Checked: ${candidateUrls.join(', ')}. ${lastError ? String(lastError.message || lastError) : ''}`
   );
 }
 
-function mountABMWidget() {
-  if (document.getElementById('abm-chat-panel')) {
+function mountRasaChatbotWidget() {
+  if (document.getElementById('rasa-chat-panel')) {
     return;
   }
 
   const toggle = document.createElement('button');
   toggle.type = 'button';
-  toggle.className = 'abm-chat-toggle';
-  toggle.textContent = 'ABM';
-  toggle.setAttribute('aria-label', 'Open ABM assistant');
+  toggle.className = 'rasa-chat-toggle';
+  toggle.textContent = 'RASA';
+  toggle.setAttribute('aria-label', 'Open RASA Chatbot');
 
   const panel = document.createElement('section');
-  panel.id = 'abm-chat-panel';
-  panel.className = 'abm-chat-panel';
+  panel.id = 'rasa-chat-panel';
+  panel.className = 'rasa-chat-panel';
 
   const header = document.createElement('header');
-  header.className = 'abm-chat-header';
-  header.innerHTML = '<span>CivicTwin Rasa Assistant</span>';
+  header.className = 'rasa-chat-header';
+  header.innerHTML = '<span>CivicTwin RASA Chatbot</span>';
 
   const close = document.createElement('button');
   close.type = 'button';
-  close.className = 'abm-chat-close';
+  close.className = 'rasa-chat-close';
   close.textContent = '×';
   close.setAttribute('aria-label', 'Close chatbot');
   header.appendChild(close);
 
   const messages = document.createElement('div');
-  messages.className = 'abm-chat-messages';
+  messages.className = 'rasa-chat-messages';
 
   const inputWrap = document.createElement('div');
-  inputWrap.className = 'abm-chat-input-wrap';
+  inputWrap.className = 'rasa-chat-input-wrap';
 
   const input = document.createElement('input');
   input.type = 'text';
-  input.className = 'abm-chat-input';
+  input.className = 'rasa-chat-input';
   input.placeholder = 'Ask about unemployment, income, migration, rent';
 
   const send = document.createElement('button');
   send.type = 'button';
-  send.className = 'abm-chat-send';
+  send.className = 'rasa-chat-send';
   send.textContent = 'Send';
 
   const note = document.createElement('p');
-  note.className = 'abm-chat-note';
+  note.className = 'rasa-chat-note';
   note.textContent = 'Ask anything about complaints, profile, or simulation insights.';
 
   inputWrap.appendChild(input);
@@ -255,7 +252,7 @@ function mountABMWidget() {
     history = [
       {
         role: 'bot',
-        text: 'Hello. I am your CivicTwin Rasa assistant. Ask me about complaints, profile details, and simulation insights.'
+        text: 'Hello. I am your CivicTwin RASA Chatbot. Ask me about complaints, profile details, and simulation insights.'
       }
     ];
     clearHistory();
@@ -321,7 +318,8 @@ function mountABMWidget() {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', mountABMWidget);
+  document.addEventListener('DOMContentLoaded', mountRasaChatbotWidget);
 } else {
-  mountABMWidget();
+  mountRasaChatbotWidget();
 }
+

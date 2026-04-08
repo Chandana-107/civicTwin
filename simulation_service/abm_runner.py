@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from statistics import mean
 
-from abm_model import CivicABMModel
+try:
+    # Package import path
+    from .abm_model import CivicABMModel
+except ImportError:
+    # Direct module import path when running from simulation_service directory
+    from abm_model import CivicABMModel
 
 
 def run_abm_single(config: dict) -> dict:

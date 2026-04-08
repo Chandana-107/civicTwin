@@ -1,14 +1,14 @@
 :root {
-  --abm-chat-primary: var(--primary-color, #1E3150);
-  --abm-chat-primary-2: var(--primary-light, #5377A2);
-  --abm-chat-surface: var(--card-bg, #FFFFFF);
-  --abm-chat-text: var(--text-primary, #1E3150);
-  --abm-chat-muted: var(--text-secondary, #5377A2);
-  --abm-chat-user: var(--primary-color, #1E3150);
-  --abm-chat-bot: var(--light-bg, #F1F1F1);
+  --rasa-chat-primary: var(--primary-color, #1E3150);
+  --rasa-chat-primary-2: var(--primary-light, #5377A2);
+  --rasa-chat-surface: var(--card-bg, #FFFFFF);
+  --rasa-chat-text: var(--text-primary, #1E3150);
+  --rasa-chat-muted: var(--text-secondary, #5377A2);
+  --rasa-chat-user: var(--primary-color, #1E3150);
+  --rasa-chat-bot: var(--light-bg, #F1F1F1);
 }
 
-.abm-chat-toggle {
+.rasa-chat-toggle {
   position: fixed;
   right: 20px;
   bottom: 20px;
@@ -16,7 +16,7 @@
   height: 58px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(140deg, var(--abm-chat-primary), var(--abm-chat-primary-2));
+  background: linear-gradient(140deg, var(--rasa-chat-primary), var(--rasa-chat-primary-2));
   color: #fff;
   font-size: 18px;
   font-weight: 700;
@@ -25,7 +25,7 @@
   z-index: 9999;
 }
 
-.abm-chat-panel {
+.rasa-chat-panel {
   position: fixed;
   right: 20px;
   bottom: 90px;
@@ -33,28 +33,28 @@
   height: min(520px, calc(100vh - 120px));
   border-radius: 14px;
   overflow: hidden;
-  background: var(--abm-chat-surface);
+  background: var(--rasa-chat-surface);
   box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
   z-index: 9999;
   display: none;
   flex-direction: column;
 }
 
-.abm-chat-panel.open {
+.rasa-chat-panel.open {
   display: flex;
 }
 
-.abm-chat-header {
+.rasa-chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
   color: #fff;
   font-weight: 700;
-  background: linear-gradient(160deg, var(--abm-chat-primary), var(--abm-chat-primary-2));
+  background: linear-gradient(160deg, var(--rasa-chat-primary), var(--rasa-chat-primary-2));
 }
 
-.abm-chat-close {
+.rasa-chat-close {
   border: none;
   background: transparent;
   color: #fff;
@@ -62,23 +62,23 @@
   cursor: pointer;
 }
 
-.abm-chat-messages {
+.rasa-chat-messages {
   flex: 1;
   overflow-y: auto;
   padding: 12px;
-  background: radial-gradient(circle at top left, rgba(83, 119, 162, 0.12), var(--abm-chat-surface) 60%);
+  background: radial-gradient(circle at top left, rgba(83, 119, 162, 0.12), var(--rasa-chat-surface) 60%);
 }
 
-.abm-chat-row {
+.rasa-chat-row {
   display: flex;
   margin-bottom: 10px;
 }
 
-.abm-chat-row.user {
+.rasa-chat-row.user {
   justify-content: flex-end;
 }
 
-.abm-chat-bubble {
+.rasa-chat-bubble {
   max-width: 84%;
   border-radius: 12px;
   padding: 9px 11px;
@@ -87,19 +87,19 @@
   white-space: pre-wrap;
 }
 
-.abm-chat-row.user .abm-chat-bubble {
-  background: var(--abm-chat-user);
+.rasa-chat-row.user .rasa-chat-bubble {
+  background: var(--rasa-chat-user);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
 
-.abm-chat-row.bot .abm-chat-bubble {
-  background: var(--abm-chat-bot);
-  color: var(--abm-chat-text);
+.rasa-chat-row.bot .rasa-chat-bubble {
+  background: var(--rasa-chat-bot);
+  color: var(--rasa-chat-text);
   border-bottom-left-radius: 4px;
 }
 
-.abm-chat-input-wrap {
+.rasa-chat-input-wrap {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 8px;
@@ -107,50 +107,51 @@
   border-top: 1px solid var(--border-color, #D1D5DB);
 }
 
-.abm-chat-input {
+.rasa-chat-input {
   border: 1px solid var(--border-color, #D1D5DB);
   border-radius: 10px;
   padding: 9px 10px;
   font-size: 14px;
-  color: var(--abm-chat-text);
+  color: var(--rasa-chat-text);
 }
 
-.abm-chat-input:focus {
+.rasa-chat-input:focus {
   outline: none;
   border-color: var(--primary-light, #5377A2);
   box-shadow: 0 0 0 3px rgba(83, 119, 162, 0.16);
 }
 
-.abm-chat-send {
+.rasa-chat-send {
   border: none;
   border-radius: 10px;
   padding: 0 14px;
-  background: var(--abm-chat-primary);
+  background: var(--rasa-chat-primary);
   color: #fff;
   cursor: pointer;
   font-weight: 600;
 }
 
-.abm-chat-send:hover {
+.rasa-chat-send:hover {
   background: var(--primary-dark, #0F1828);
 }
 
-.abm-chat-note {
+.rasa-chat-note {
   margin: 0;
   padding: 0 12px 8px;
   font-size: 12px;
-  color: var(--abm-chat-muted);
+  color: var(--rasa-chat-muted);
 }
 
 @media (max-width: 600px) {
-  .abm-chat-toggle {
+  .rasa-chat-toggle {
     right: 14px;
     bottom: 14px;
   }
 
-  .abm-chat-panel {
+  .rasa-chat-panel {
     right: 12px;
     bottom: 78px;
     width: calc(100vw - 24px);
   }
 }
+
