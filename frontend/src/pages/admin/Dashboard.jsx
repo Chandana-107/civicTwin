@@ -42,6 +42,10 @@ const AdminDashboard = () => {
           <h3>📊 Sentiment</h3>
           <p>Social feed analysis</p>
         </div>
+        <div className="admin-action-card sentiment" onClick={() => navigate('/admin/social-feed')}>
+          <h3>📱 Social Feed</h3>
+          <p>Create posts and track engagement</p>
+        </div>
         <div className="admin-action-card map" onClick={() => navigate('/admin/map')}>
           <h3>🗺️ Map View</h3>
           <p>Geospatial analysis</p>

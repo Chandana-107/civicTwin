@@ -13,6 +13,7 @@ import ForgotPassword from './pages/auth/ForgotPassword'
 import CitizenDashboard from './pages/citizen/Dashboard'
 import FileComplaint from './pages/citizen/FileComplaint'
 import MyComplaints from './pages/citizen/MyComplaints'
+import SocialFeed from './pages/citizen/SocialFeed'
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard'
@@ -21,6 +22,7 @@ import ComplaintMap from './pages/admin/ComplaintMap'
 import ComplaintDetail from './pages/admin/ComplaintDetail'
 import FraudDashboard from './pages/admin/FraudDashboard'
 import SentimentDashboard from './pages/admin/SentimentDashboard'
+import SocialFeedDashboard from './pages/admin/SocialFeedDashboard'
 import Simulation from './pages/simulation/Simulation'
 
 function App() {
@@ -64,7 +66,7 @@ function App() {
             path="/citizen/social"
             element={
               <ProtectedRoute allowedRoles={['citizen']}>
-                <SentimentDashboard />
+                <SocialFeed />
               </ProtectedRoute>
             }
           />
@@ -115,6 +117,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={['admin']}>
                 <SentimentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/social-feed"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <SocialFeedDashboard />
               </ProtectedRoute>
             }
           />
