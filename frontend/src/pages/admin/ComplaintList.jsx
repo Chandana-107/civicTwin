@@ -7,6 +7,7 @@ import './Admin.css';
 const ComplaintList = () => {
     const navigate = useNavigate();
     const [complaints, setComplaints] = useState([]);
+    const [usersById, setUsersById] = useState({});
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState({
         status: '',
@@ -24,8 +25,32 @@ const ComplaintList = () => {
             if (filters.status) params.status = filters.status;
             if (filters.category) params.category = filters.category;
 
-            const response = await api.get('/complaints', { params });
-            setComplaints(response.data.data || []);
+            const [complaintsResponse, usersResponse] = await Promise.allSettled([
+                api.get('/complaints', { params }),
+                api.get('/users')
+            ]);
+
+            const complaintRows = complaintsResponse.status === 'fulfilled'
+                ? complaintsResponse.value.data.data || []
+                : [];
+
+            const users = usersResponse.status === 'fulfilled' && Array.isArray(usersResponse.value.data)
+                ? usersResponse.value.data
+                : [];
+
+            const usersMap = users.reduce((acc, user) => {
+                if (user?.id) {
+                    acc[user.id] = user.name || user.username || user.email || user.id;
+                }
+                return acc;
+            }, {});
+
+            setUsersById(usersMap);
+            setComplaints(complaintRows);
+
+            if (complaintsResponse.status !== 'fulfilled') {
+                throw complaintsResponse.reason;
+            }
         } catch (error) {
             console.error(error);
             toast.error('Failed to load complaints');
@@ -59,6 +84,20 @@ const ComplaintList = () => {
             case 'resolved': return '#FFFFFF';
             default: return '#1E3150';
         }
+    };
+
+    const getComplaintReporterName = (complaint) => {
+        const complaintUserId = complaint?.user_id || complaint?.userId || complaint?.user?.id;
+
+        return complaint?.username
+            || complaint?.user_name
+            || complaint?.name
+            || complaint?.user?.name
+            || complaint?.reporter_name
+            || complaint?.reporter?.name
+            || (complaintUserId ? usersById[complaintUserId] : null)
+            || complaint?.user_id
+            || 'Unknown';
     };
 
     return (
@@ -107,7 +146,7 @@ const ComplaintList = () => {
                                 <div className="complaint-header-row">
                                     <div className="complaint-header-content">
                                         <h3>{complaint.title}</h3>
-                                        <span className="complaint-user-id">From User ID: {complaint.user_id}</span>
+                                        <span className="complaint-user-id">From: {getComplaintReporterName(complaint)}</span>
                                     </div>
                                     <span className="admin-status-badge" style={{
                                         backgroundColor: getStatusColor(complaint.status),
