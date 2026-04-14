@@ -78,7 +78,7 @@ const CommentSection = ({ isOpen, comments, draft, onDraftChange, onSubmit, dark
     );
 };
 
-const PostCard = ({ post, darkMode, commentsOpen, commentDraft, onCommentDraftChange, onToggleLike, onToggleComments, onToggleSave, onShare, onDelete, onSubmitComment, generatedSummary, onGenerateSummary, summaryLoading }) => {
+const PostCard = ({ post, darkMode, commentsOpen, commentDraft, onCommentDraftChange, onToggleLike, onToggleComments, onToggleSave, onShare, onDelete, onSubmitComment }) => {
     const likeCount = Number(post?.reaction_counts?.like || 0);
     return (
         <article style={{ ...ui.card(darkMode), padding: '0.85rem', transition: 'transform 0.25s ease, box-shadow 0.25s ease' }}>
@@ -119,24 +119,6 @@ const PostCard = ({ post, darkMode, commentsOpen, commentDraft, onCommentDraftCh
                 <span>{post.saves_count || 0} saves</span>
             </div>
 
-            <div style={{ marginBottom: '0.5rem' }}>
-                <button disabled={summaryLoading} onClick={onGenerateSummary} style={{ ...ui.pillBtn(darkMode), borderRadius: '10px', borderColor: darkMode ? '#1d4ed8' : '#93c5fd', opacity: summaryLoading ? 0.7 : 1 }}>
-                    {summaryLoading ? 'Generating...' : (generatedSummary ? 'Regenerate AI Summary' : 'Generate AI Summary')}
-                </button>
-            </div>
-
-            {generatedSummary && (
-                <div style={{ marginBottom: '0.5rem', border: `1px solid ${darkMode ? '#1e40af' : '#bfdbfe'}`, borderRadius: '10px', background: darkMode ? '#0b1a3a' : '#eff6ff', padding: '0.55rem 0.65rem' }}>
-                    <p style={{ margin: 0, fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.02em', color: darkMode ? '#bfdbfe' : '#1e3a8a' }}>AI Summary</p>
-                    <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.78rem', fontWeight: 700, color: darkMode ? '#bfdbfe' : '#1e3a8a' }}>Overall Sentiment</p>
-                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.82rem', lineHeight: '1.45', color: darkMode ? '#dbeafe' : '#1e293b' }}>{generatedSummary.overallSentiment}</p>
-                    <p style={{ margin: '0.45rem 0 0 0', fontSize: '0.78rem', fontWeight: 700, color: darkMode ? '#bfdbfe' : '#1e3a8a' }}>Top Topics</p>
-                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.82rem', lineHeight: '1.45', color: darkMode ? '#dbeafe' : '#1e293b' }}>{generatedSummary.topTopics}</p>
-                    <p style={{ margin: '0.45rem 0 0 0', fontSize: '0.78rem', fontWeight: 700, color: darkMode ? '#bfdbfe' : '#1e3a8a' }}>Recommended Admin Action</p>
-                    <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.82rem', lineHeight: '1.45', color: darkMode ? '#dbeafe' : '#1e293b' }}>{generatedSummary.recommendedAction}</p>
-                </div>
-            )}
-
             <p style={{ margin: 0, color: darkMode ? '#e2e8f0' : '#111827', lineHeight: '1.45' }}><strong>{post.author || 'Admin'}</strong> {post.text}</p>
 
             <CommentSection
@@ -166,8 +148,6 @@ const SocialFeedDashboard = () => {
     const [draftComments, setDraftComments] = useState({});
     const [isDragging, setIsDragging] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-    const [generatedSummariesByPost, setGeneratedSummariesByPost] = useState({});
-    const [summaryLoadingByPost, setSummaryLoadingByPost] = useState({});
     const [bgOverrides, setBgOverrides] = useState(() => {
         try {
             const raw = localStorage.getItem(BG_OVERRIDES_KEY);
@@ -356,27 +336,6 @@ const SocialFeedDashboard = () => {
         } catch (error) {
             console.error(error);
             toast.error('Comment failed');
-        }
-    };
-
-    const generateSummary = async (postId) => {
-        setSummaryLoadingByPost((prev) => ({ ...prev, [postId]: true }));
-        try {
-            const response = await api.post(`/social/${postId}/ai-summary`);
-            const summary = response?.data?.summary || null;
-
-            if (!summary) {
-                toast.error('No summary returned');
-                return;
-            }
-
-            setGeneratedSummariesByPost((prev) => ({ ...prev, [postId]: summary }));
-        } catch (error) {
-            console.error(error);
-            const message = error?.response?.data?.error || 'Failed to generate AI summary';
-            toast.error(message);
-        } finally {
-            setSummaryLoadingByPost((prev) => ({ ...prev, [postId]: false }));
         }
     };
 
@@ -595,9 +554,6 @@ const SocialFeedDashboard = () => {
                                 onShare={() => sharePost(post.id)}
                                 onDelete={() => deletePost(post.id)}
                                 onSubmitComment={() => submitComment(post.id)}
-                                generatedSummary={generatedSummariesByPost[post.id] || null}
-                                onGenerateSummary={() => generateSummary(post.id)}
-                                summaryLoading={!!summaryLoadingByPost[post.id]}
                             />
                         ))}
                     </div>
