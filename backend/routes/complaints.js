@@ -40,6 +40,8 @@ router.get("/", auth, async (req, res) => {
   const filters = []; 
   const params = []; 
   let i=1; 
+  const role = String(req.user?.role || '').toLowerCase();
+  if (role !== 'admin') { filters.push(`user_id=$${i++}`); params.push(req.user.id); }
   if (status) { filters.push(`status=$${i++}`); params.push(status); } 
   if (category) { filters.push(`category=$${i++}`); params.push(category); } 
   const where = filters.length ? `WHERE ${filters.join(" AND ")}` : ""; 

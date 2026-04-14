@@ -76,7 +76,7 @@ const MyComplaints = () => {
                                 </span>
                             </div>
                             <p className="complaint-meta">
-                                🆔 ID {complaint.id} • 📅 {new Date(complaint.created_at).toLocaleDateString()}
+                                📅 {new Date(complaint.created_at).toLocaleDateString()}
                             </p>
                             <p className="complaint-text">{complaint.text}</p>
                             {complaint.location_address && (

@@ -216,6 +216,13 @@ const FraudDashboard = () => {
                                         console.error('Error parsing flag evidence:', err, flag);
                                         evidence = {};
                                     }
+
+                                    const tenderReference = flag.tender_number
+                                        || (flag.tender_id ? `Ref ${String(flag.tender_id).substring(0, 8)}` : 'Tender reference unavailable');
+                                    const tenderTitle = flag.tender_title || evidence.description || '';
+                                    const contractorName = flag.contractor || evidence.contractor || 'Contractor details unavailable';
+                                    const departmentName = flag.department || 'Department unavailable';
+                                    const categoryName = flag.category || evidence.category || 'Category unavailable';
                                     
                                     // Render evidence based on rule type
                                     let evidenceDisplay = null;
@@ -282,7 +289,10 @@ const FraudDashboard = () => {
                                                 </span>
                                             </div>
                                             <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#5377A2' }}>
-                                                Tender: {flag.tender_id}
+                                                Tender: {tenderReference}{tenderTitle ? ` - ${tenderTitle}` : ''}
+                                            </p>
+                                            <p style={{ marginTop: '0.25rem', fontSize: '0.85rem', color: '#5377A2' }}>
+                                                {`Contractor: ${contractorName} • Dept: ${departmentName} • Category: ${categoryName}`}
                                             </p>
                                             {evidenceDisplay}
                                         </div>

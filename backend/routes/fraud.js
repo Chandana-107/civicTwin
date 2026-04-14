@@ -8,7 +8,20 @@ const { v4: uuidv4 } = require("uuid");
 // List flags 
 router.get("/flags", auth, async (req, res) => {
   try {
-    const r = await pool.query("SELECT * FROM fraud_flags ORDER BY created_at DESC");
+    const r = await pool.query(`
+      SELECT
+        f.*,
+        t.tender_number,
+        t.title AS tender_title,
+        t.contractor,
+        t.category,
+        t.department,
+        t.amount,
+        t.date
+      FROM fraud_flags f
+      LEFT JOIN tenders t ON t.id = f.tender_id
+      ORDER BY f.created_at DESC
+    `);
     res.json(r.rows);
   } catch (err) {
     console.error(err); res.status(500).json({ error: "DB error" });
