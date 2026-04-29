@@ -1,27 +1,27 @@
 # seed_fraud_clusters.py
+# Seeds fraud_clusters with realistic network cluster data.
+# Run AFTER seed_tenders.py and seed_fraud_flags.py.
+
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from infra.db import get_connection
-import random
-import json
+import random, json, uuid
+
+EDGE_TYPE_COMBOS = [
+    ["awarded_by", "shared_phone"],
+    ["shared_address", "serves_beneficiary"],
+    ["awarded_by", "shared_address", "shared_phone"],
+    ["uses_bank", "serves_beneficiary"],
+    ["awarded_by", "uses_bank"],
+]
 
 NETWORK_PATTERNS = [
     "Repeated contractor-beneficiary linkage across ward-level tenders in Bengaluru.",
     "High overlap of vendor contacts across road, lighting, and sanitation projects.",
     "Sequential awards concentrated within connected entities in adjacent municipal zones.",
     "Frequent participation by linked bidders in small-value maintenance contracts.",
-    "Potential collusive bidding ring across public works tenders in Karnataka districts."
-]
-
-INDICATOR_POOL = [
-    "shared_phone",
-    "repeat_beneficiary",
-    "common_address_pattern",
-    "rapid_award_interval",
-    "high_bid_correlation",
-    "same_bank_branch",
-    "director_name_overlap",
-    "identical_document_format",
-    "price_clustering",
-    "geo_proximity"
+    "Potential collusive bidding ring across public works tenders in Karnataka districts.",
 ]
 
 ANALYST_COMMENTS = [
@@ -29,62 +29,78 @@ ANALYST_COMMENTS = [
     "Graph relationships indicate concentrated contract flow among a small connected group.",
     "Procurement timelines and bidder metadata show repeated linkage signatures.",
     "Risk posture is elevated and merits manual audit with supporting procurement records.",
-    "Pattern is consistent with potential bid rotation and proxy participation signals."
+    "Pattern is consistent with potential bid rotation and proxy participation signals.",
 ]
 
 
-def build_cluster_evidence():
-    indicator_count = random.randint(3, 7)
-    return {
-        "pattern": random.choice(NETWORK_PATTERNS),
-        "indicators": random.sample(INDICATOR_POOL, k=indicator_count),
-        "risk_factor": round(random.uniform(0, 1), 3),
-        "comments": random.choice(ANALYST_COMMENTS)
-    }
-
-def seed_fraud_clusters(count=20):
+def seed_fraud_clusters(count=25):
     conn = get_connection()
-    cur = conn.cursor()
+    cur  = conn.cursor()
 
-    # Fetch tenders (used as "nodes" in clusters)
-    cur.execute("SELECT id FROM tenders;")
-    tenders = [t[0] for t in cur.fetchall()]
+    # Fetch latest completed run for run_id FK
+    cur.execute("SELECT id FROM fraud_audit_runs WHERE status='completed' ORDER BY completed_at DESC LIMIT 1;")
+    row = cur.fetchone()
+    run_id = str(row[0]) if row else None
 
-    if not tenders:
-        print("No tenders found. Seed tenders first!")
+    # Fetch contractor and beneficiary IDs from tenders to use as node IDs
+    cur.execute("SELECT contractor_id, beneficiary_id FROM tenders WHERE contractor_id IS NOT NULL LIMIT 100;")
+    rows = cur.fetchall()
+    node_pool = []
+    for r in rows:
+        if r[0]: node_pool.append(f"contractor:{r[0]}")
+        if r[1]: node_pool.append(f"beneficiary:{r[1]}")
+
+    if not node_pool:
+        print("⚠  No tenders found — run seed_tenders.py first.")
+        conn.close()
         return
 
+    seeded = 0
     for _ in range(count):
+        node_count    = random.randint(3, 10)
+        cluster_nodes = random.sample(node_pool, min(node_count, len(node_pool)))
 
-        # Pick 3–10 tender nodes per cluster
-        node_count = random.randint(3, 10)
-        cluster_nodes = random.sample(tenders, min(node_count, len(tenders)))
+        edge_types            = random.choice(EDGE_TYPE_COMBOS)
+        suspiciousness_score  = round(random.uniform(0.3, 1.0), 3)
+        total_amount          = round(random.uniform(500_000, 100_000_000), 2)
+        edge_density          = round(random.uniform(0.2, 1.0), 3)
+        has_cycle             = random.random() < 0.3   # 30% chance of circular relationship
 
-        suspiciousness_score = round(random.uniform(0, 1), 3)
-        total_amount = round(random.uniform(100000, 100000000), 2)  # 1 lakh – 10 crore
-        edge_density = round(random.uniform(0.1, 1.0), 3)
+        evidence = {
+            "reason":                   "Connected via: " + ", ".join(edge_types),
+            "pattern":                  random.choice(NETWORK_PATTERNS),
+            "size":                     len(cluster_nodes),
+            "internal_edges":           random.randint(len(cluster_nodes) - 1, len(cluster_nodes) * 2),
+            "has_circular_relationship":has_cycle,
+            "risk_factor":              round(random.uniform(0, 1), 3),
+            "comments":                 random.choice(ANALYST_COMMENTS),
+        }
 
-        evidence = build_cluster_evidence()
+        cluster_hash = str(uuid.uuid4())
 
         cur.execute("""
             INSERT INTO fraud_clusters (
-                cluster_nodes, suspiciousness_score, total_amount,
-                edge_density, evidence
+                run_id, cluster_hash, cluster_nodes,
+                suspiciousness_score, total_amount, edge_density,
+                evidence, created_at, updated_at
             )
-            VALUES (%s::jsonb, %s, %s, %s, %s::jsonb);
+            VALUES (%s, %s, %s::jsonb, %s, %s, %s, %s::jsonb, now(), now())
+            ON CONFLICT (cluster_hash) DO NOTHING;
         """, (
+            run_id,
+            cluster_hash,
             json.dumps(cluster_nodes),
             suspiciousness_score,
             total_amount,
             edge_density,
-            json.dumps(evidence)
+            json.dumps(evidence),
         ))
+        seeded += 1
 
     conn.commit()
     cur.close()
     conn.close()
-
-    print(f"Seeded {count} fraud clusters!")
+    print(f"✅  Seeded {seeded} fraud clusters (run_id: {run_id}).")
 
 
 if __name__ == "__main__":

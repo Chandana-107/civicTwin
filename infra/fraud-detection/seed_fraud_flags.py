@@ -1,170 +1,255 @@
-# seed_fraud_flags.py
+# seed_fraud_findings.py  (replaces old seed_fraud_flags.py)
+# Seeds fraud_audit_runs and fraud_findings tables with realistic
+# sample data matching the unified fraudReport.js canonical schema.
+# Run AFTER seed_tenders.py.
+
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
 from infra.db import get_connection
-import random
-import json
+import random, json, uuid
 from datetime import datetime, timedelta
 
-RULES = [
-    "repeat_winner",
-    "price_outlier",
-    "suspicious_beneficiary",
-    "duplicate_phone",
-    "high_risk_contractor",
-    "rapid_award_cycle"
+DETECTION_TYPES = [
+    "contractor_risk",
+    "duplicate_aadhaar",
+    "duplicate_beneficiary",
+    "inactive_claims",
+    "deceased_active",
+    "phone_reuse",
+    "bank_reuse",
+    "shared_address",
+    "identity_similarity",
+    "regional_spike",
+    "circular_identity",
 ]
 
-STATUSES = ["pending", "investigating", "confirmed", "dismissed"]
-
-EVIDENCE_LIBRARY = {
-    "repeat_winner": {
-        "descriptions": [
-            "Same contractor has won multiple ward-level tenders in a short duration.",
-            "Bid history shows repeated awards to one vendor across similar categories.",
-            "Award pattern indicates low distribution of contracts among eligible bidders."
-        ],
-        "analyses": [
-            "Tender comparison across the last 6 months shows concentration of awards with the same contractor, especially for maintenance and road works.",
-            "Participation records indicate frequent shortlisting overlap and repeated final selection for one bidder.",
-            "Risk is elevated due to repeated successful outcomes despite comparable competitor quotations in prior rounds."
-        ],
-        "documents": ["award_history_report.pdf", "bid_participation_log.xlsx", "contractor_profile_note.pdf"]
-    },
-    "price_outlier": {
-        "descriptions": [
-            "Quoted amount is significantly above the median of comparable municipal tenders.",
-            "Cost estimate deviates from benchmark values for the same work scope.",
-            "Tender amount appears inflated relative to similar projects in nearby zones."
-        ],
-        "analyses": [
-            "Rate analysis against category-level historical tenders in Bengaluru indicates a high pricing deviation.",
-            "Unit cost components exceed typical estimates for materials, transport, and labor bands.",
-            "Budget variance review suggests the submitted quote may require detailed technical justification."
-        ],
-        "documents": ["price_benchmark_sheet.xlsx", "rate_analysis_note.pdf", "comparative_cost_chart.pdf"]
-    },
-    "suspicious_beneficiary": {
-        "descriptions": [
-            "Beneficiary identity has incomplete verification in submitted records.",
-            "Beneficiary details show inconsistencies across tender documents.",
-            "Name and address pattern indicates potential proxy or linked beneficiary."
-        ],
-        "analyses": [
-            "KYC fields and supporting records contain mismatched entries requiring manual verification.",
-            "Cross-record checks indicate duplicate-like beneficiary signatures in separate submissions.",
-            "Beneficiary mapping across prior projects suggests possible hidden affiliations."
-        ],
-        "documents": ["beneficiary_verification_checklist.pdf", "kyc_comparison_log.xlsx", "identity_review_note.pdf"]
-    },
-    "duplicate_phone": {
-        "descriptions": [
-            "Contact number appears in multiple contractor profiles.",
-            "Phone number is reused across tenders linked to different entities.",
-            "Submitted contact details overlap with previously flagged bidders."
-        ],
-        "analyses": [
-            "Phone number clustering indicates repeated use of identical contact points across unrelated firms.",
-            "Data quality checks found high-confidence duplicate communication details in bidder records.",
-            "Network review suggests potential connected parties using common contact identifiers."
-        ],
-        "documents": ["contact_dedup_report.csv", "entity_link_map.pdf", "phone_overlap_analysis.xlsx"]
-    },
-    "high_risk_contractor": {
-        "descriptions": [
-            "Contractor has prior risk markers from earlier procurement cycles.",
-            "Vendor risk profile exceeds acceptable threshold for current award value.",
-            "Background checks show compliance gaps in previous assignments."
-        ],
-        "analyses": [
-            "Historic performance logs show delayed milestones and repeated quality remarks.",
-            "Risk scoring model indicates elevated exposure due to compliance and delivery history.",
-            "Prior inspection and audit notes classify this contractor as medium-to-high risk."
-        ],
-        "documents": ["contractor_risk_profile.pdf", "past_performance_summary.xlsx", "compliance_observation_note.pdf"]
-    },
-    "rapid_award_cycle": {
-        "descriptions": [
-            "Tender moved from issue to award faster than standard review timelines.",
-            "Bid processing timeline is unusually short for the project complexity.",
-            "Approval stages were completed in compressed sequence compared to norms."
-        ],
-        "analyses": [
-            "Workflow timestamps show reduced interval between technical evaluation and final approval.",
-            "Timeline audit indicates expedited movement through multiple governance checkpoints.",
-            "Cycle-time comparison with similar projects flags this tender for procedural review."
-        ],
-        "documents": ["award_timeline_audit.pdf", "workflow_events_export.csv", "approval_sequence_review.pdf"]
-    }
+ENTITY_TYPE_MAP = {
+    "contractor_risk":      "contractor",
+    "duplicate_aadhaar":    "beneficiary",
+    "duplicate_beneficiary":"beneficiary",
+    "inactive_claims":      "beneficiary",
+    "deceased_active":      "beneficiary",
+    "phone_reuse":          "beneficiary",
+    "bank_reuse":           "beneficiary",
+    "shared_address":       "beneficiary",
+    "identity_similarity":  "beneficiary",
+    "regional_spike":       "department",
+    "circular_identity":    "tender",
 }
 
-def random_datetime(days=365):
-    """Generate a random timestamp within last 'days' days."""
+SEVERITY_MAP = {
+    "contractor_risk":      ["Medium", "High", "Critical"],
+    "duplicate_aadhaar":    ["High", "Critical"],
+    "duplicate_beneficiary":["Medium", "High"],
+    "inactive_claims":      ["High", "Critical"],
+    "deceased_active":      ["Critical"],
+    "phone_reuse":          ["Medium"],
+    "bank_reuse":           ["Medium", "High"],
+    "shared_address":       ["Medium", "High"],
+    "identity_similarity":  ["Medium"],
+    "regional_spike":       ["High"],
+    "circular_identity":    ["Critical"],
+}
+
+SCORE_MAP = {
+    "Critical": (80, 100),
+    "High":     (60, 80),
+    "Medium":   (35, 60),
+    "Low":      (10, 35),
+}
+
+SAMPLE_EXPLANATIONS = {
+    "contractor_risk":      "Contractor won {pct}% of total contract value (₹{amount}) with {wins} awards in the lookback period.",
+    "duplicate_aadhaar":    "Aadhaar {aadhaar}XXXX is linked to {count} different beneficiary IDs.",
+    "duplicate_beneficiary":"Beneficiary ID appears {count} times across welfare disbursement records.",
+    "inactive_claims":      "Beneficiary is marked deceased/inactive but continues to receive active disbursements.",
+    "deceased_active":      "Beneficiary died on {death_date} but received {count} disbursement(s) after death (last: {last}).",
+    "phone_reuse":          "Same phone number reused across {count} separate welfare claim records.",
+    "bank_reuse":           "Same bank account reused across {count} separate beneficiary records.",
+    "shared_address":       "{count} different beneficiary IDs share the same registered address.",
+    "identity_similarity":  "Beneficiary name is >92% similar to another record — possible ghost/duplicate entry.",
+    "regional_spike":       "Department '{dept}' disbursed ₹{amount} in {month} — {factor}× the 6-month rolling average.",
+    "circular_identity":    "Approving official name/address/phone matches the winning contractor on tender {tnum}.",
+}
+
+STATUSES = ["open", "open", "open", "investigating", "escalated", "confirmed", "dismissed"]
+
+
+def rand_amount(min_v, max_v):
+    return round(random.uniform(min_v, max_v), 2)
+
+def rand_datetime(days=180):
     return datetime.now() - timedelta(days=random.randint(0, days))
 
 
-def build_evidence(rule):
-    library = EVIDENCE_LIBRARY[rule]
-    document_count = random.randint(1, 3)
-    return {
-        "description": random.choice(library["descriptions"]),
-        "analysis": random.choice(library["analyses"]),
-        "related_documents": random.sample(library["documents"], k=document_count),
-        "risk_factor": round(random.uniform(0, 1), 3)
-    }
+def build_evidence(ftype):
+    if ftype == "contractor_risk":
+        wins = random.randint(5, 20)
+        return {
+            "contractor":       f"Contractor-{random.randint(1,10)}",
+            "tender_count":     wins,
+            "win_rate":         round(random.uniform(0.3, 0.8), 3),
+            "value_share":      round(random.uniform(0.3, 0.75), 3),
+            "data_confidence":  random.choice(["low", "medium", "high"]),
+            "score_parts": {
+                "repeatWinner":   random.randint(10, 25),
+                "bidCollusion":   random.randint(0, 20),
+                "costAnomaly":    random.randint(0, 20),
+                "tenderSplitting":random.randint(0, 15),
+                "network":        0,
+            },
+        }
+    elif ftype == "duplicate_aadhaar":
+        count = random.randint(2, 4)
+        return {
+            "aadhaar_masked": f"{random.randint(1000,9999)}XXXX{random.randint(10,99)}",
+            "linked_ids":     [str(uuid.uuid4()) for _ in range(count)],
+            "count":          count,
+        }
+    elif ftype in ("duplicate_beneficiary", "phone_reuse", "bank_reuse"):
+        return {"count": random.randint(2, 6)}
+    elif ftype == "inactive_claims":
+        return {"beneficiary_status": "deceased"}
+    elif ftype == "deceased_active":
+        death = (datetime.now() - timedelta(days=random.randint(90, 500))).strftime("%Y-%m-%d")
+        last  = (datetime.now() - timedelta(days=random.randint(0, 89))).strftime("%Y-%m-%d")
+        return {"death_date": death, "last_disbursement": last, "post_death_count": random.randint(1, 5)}
+    elif ftype == "shared_address":
+        count = random.randint(3, 7)
+        return {"address": "12, HSR Layout Main Road, Bengaluru", "linked_ids": [str(uuid.uuid4()) for _ in range(count)], "count": count}
+    elif ftype == "identity_similarity":
+        return {"similar_to": str(uuid.uuid4()), "similarity_score": round(random.uniform(0.92, 0.99), 3)}
+    elif ftype == "regional_spike":
+        return {
+            "department":   random.choice(["PWD", "Municipal", "Health Dept"]),
+            "month":        (datetime.now() - timedelta(days=random.randint(0, 30))).strftime("%Y-%m"),
+            "amount":       rand_amount(5_000_000, 30_000_000),
+            "baseline_avg": rand_amount(500_000, 2_000_000),
+            "spike_factor": round(random.uniform(2.5, 8.0), 2),
+        }
+    elif ftype == "circular_identity":
+        return {
+            "tender_number":  f"TDR-{random.randint(10000,99999)}",
+            "contractor":     "CivicRise Engineering Services",
+            "official_name":  "CivicRise Engineering",
+            "matched_fields": random.sample(["name match", "shared address", "shared phone"], k=random.randint(1,3)),
+            "amount":         rand_amount(1_000_000, 15_000_000),
+        }
+    return {}
 
-def seed_fraud_flags(count=40):
+
+def build_explanation(ftype, evidence):
+    tmpl = SAMPLE_EXPLANATIONS.get(ftype, "Fraud signal detected.")
+    try:
+        return tmpl.format(
+            pct    = round((evidence.get("value_share", 0) or 0) * 100, 1),
+            amount = f"{int(evidence.get('amount', evidence.get('baseline_avg', 0)) or 0):,}",
+            wins   = evidence.get("tender_count", "N/A"),
+            aadhaar= evidence.get("aadhaar_masked", "XXXXXXXXXX")[:4],
+            count  = evidence.get("count", evidence.get("post_death_count", 2)),
+            death_date = evidence.get("death_date", "unknown"),
+            last   = evidence.get("last_disbursement", "unknown"),
+            dept   = evidence.get("department", "unknown"),
+            month  = evidence.get("month", "unknown"),
+            factor = evidence.get("spike_factor", "N/A"),
+            tnum   = evidence.get("tender_number", "TDR-00000"),
+        )
+    except Exception:
+        return f"Fraud signal: {ftype}"
+
+
+def seed_fraud_findings(count=50):
     conn = get_connection()
-    cur = conn.cursor()
+    cur  = conn.cursor()
 
-    # fetch required foreign keys
-    cur.execute("SELECT id FROM tenders;")
-    tenders = [t[0] for t in cur.fetchall()]
+    # Fetch tender IDs for related_tender_ids
+    cur.execute("SELECT id FROM tenders LIMIT 200;")
+    tender_ids = [str(r[0]) for r in cur.fetchall()]
 
-    cur.execute("SELECT id FROM users;")
-    users = [u[0] for u in cur.fetchall()]
+    # Fetch a user for reviewed_by
+    cur.execute("SELECT id FROM users LIMIT 10;")
+    user_ids = [str(r[0]) for r in cur.fetchall()]
 
-    if not tenders:
-        print("No tenders found. Seed tenders first!")
+    if not tender_ids:
+        print("⚠  No tenders found — run seed_tenders.py first.")
+        conn.close()
         return
 
-    for _ in range(count):
-        tender_id = random.choice(tenders)
-        rule = random.choice(RULES)
-        score = round(random.uniform(0, 1), 3)
+    # Create a synthetic completed audit run
+    run_id = str(uuid.uuid4())
+    cur.execute("""
+        INSERT INTO fraud_audit_runs (id, status, started_at, completed_at, summary)
+        VALUES (%s, 'completed', now() - INTERVAL '5 minutes', now(), %s);
+    """, (run_id, json.dumps({
+        "flags_detected":  count,
+        "high_risk_cases": count // 3,
+        "evidence_truncated": count > 100,
+        "external_services": {"graph_invoked": False, "anomaly_invoked": False},
+    })))
 
-        evidence = build_evidence(rule)
+    seeded = 0
+    for i in range(count):
+        ftype      = random.choice(DETECTION_TYPES)
+        entity_type= ENTITY_TYPE_MAP[ftype]
+        entity_id  = (
+            str(uuid.uuid4()) if entity_type in ("beneficiary", "tender")
+            else random.choice(["PWD", "Municipal", "Health Dept"]) if entity_type == "department"
+            else f"contractor-{random.randint(1,10)}"
+        )
 
-        status = random.choice(STATUSES)
+        severity   = random.choice(SEVERITY_MAP[ftype])
+        lo, hi     = SCORE_MAP[severity]
+        risk_score = round(random.uniform(lo, hi), 1)
+        evidence   = build_evidence(ftype)
+        explanation= build_explanation(ftype, evidence)
+        status     = random.choice(STATUSES)
+        finding_key= f"{ftype}:{entity_type}:{entity_id}"
 
-        reviewed_by = None
-        reviewed_at = None
+        reviewed_by  = None
+        reviewed_at  = None
+        if status in ("confirmed", "dismissed", "investigating") and user_ids:
+            reviewed_by = random.choice(user_ids)
+            reviewed_at = rand_datetime(60)
 
-        # if not pending, assign a reviewer
-        if status != "pending" and users:
-            reviewed_by = random.choice(users)
-            reviewed_at = random_datetime()
+        related = random.sample(tender_ids, min(random.randint(1, 4), len(tender_ids)))
 
         cur.execute("""
-            INSERT INTO fraud_flags (
-                tender_id, rule, score, evidence,
-                status, reviewed_by, reviewed_at
+            INSERT INTO fraud_findings (
+                run_id, finding_key, entity_type, entity_id, finding_type,
+                severity, risk_score, anomaly_score, graph_score,
+                title, explanation, evidence,
+                related_tender_ids, related_cluster_ids,
+                status, reviewed_by, reviewed_at,
+                created_at, updated_at
+            ) VALUES (
+                %s,%s,%s,%s,%s,
+                %s,%s,%s,%s,
+                %s,%s,%s::jsonb,
+                %s::jsonb,%s::jsonb,
+                %s,%s,%s,
+                now()-%s * INTERVAL '1 day', now()
             )
-            VALUES (%s, %s, %s, %s::jsonb, %s, %s, %s);
+            ON CONFLICT (finding_key) DO NOTHING;
         """, (
-            tender_id,
-            rule,
-            score,
+            run_id, finding_key, entity_type, entity_id, ftype,
+            severity, risk_score, None, None,
+            f"[{severity}] {ftype.replace('_',' ').title()}: {entity_id[:16]}",
+            explanation,
             json.dumps(evidence),
-            status,
-            reviewed_by,
-            reviewed_at
+            json.dumps(related),
+            json.dumps([]),
+            status, reviewed_by, reviewed_at,
+            random.randint(0, 180),
         ))
+        seeded += 1
 
     conn.commit()
     cur.close()
     conn.close()
-
-    print(f"Seeded {count} fraud flags!")
+    print(f"✅  Seeded {seeded} fraud findings across {len(DETECTION_TYPES)} detection types.")
+    print(f"   Audit run ID: {run_id}")
 
 
 if __name__ == "__main__":
-    seed_fraud_flags(60)
+    seed_fraud_findings(60)

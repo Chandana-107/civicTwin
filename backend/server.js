@@ -1,49 +1,8 @@
-// server.js
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
-require("dotenv").config();
+const dotenv = require('dotenv');
+dotenv.config();
+const { createApp } = require('./app');
 
-const authRoutes = require("./auth/auth.routes");
-const usersRoutes = require("./routes/users");
-const complaintsRoutes = require("./routes/complaints");
-const uploadRoutes = require("./routes/upload");
-const tendersRoutes = require("./routes/tenders");
-const fraudRoutes = require("./routes/fraud");
-const simulationRoutes = require("./routes/simulation");
-const topicsRoutes = require("./routes/topics");
-const socialRoutes = require("./routes/social_feed");
-// Sentiment Analysis and Alerting Routes
-const syntheticSocialRoutes = require("./routes/socialRoutes");
-const analyticsTopicRoutes = require("./routes/topicRoutes");
-const sentimentRoutes = require("./routes/sentimentRoutes");
-const alertRoutes = require("./routes/alertRoutes");
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-// static uploads
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-app.use("/api/auth", authRoutes);
-app.use("/users", usersRoutes);
-app.use("/complaints", complaintsRoutes);
-app.use("/upload", uploadRoutes);
-app.use("/tenders", tendersRoutes);
-app.use("/fraud", fraudRoutes);
-app.use("/simulation", simulationRoutes);
-app.use("/topics", topicsRoutes);
-app.use("/social", socialRoutes);
-// Sentiment Analysis and Alerting Routes
-app.use("/social_ingest", syntheticSocialRoutes);
-app.use("/topics_analytics", analyticsTopicRoutes);
-app.use("/sentiment", sentimentRoutes);
-app.use("/alerts", alertRoutes);
-
-app.get("/", (req, res) => {
-  res.send(`Civic Backend running on port ${process.env.PORT || 3000}`);
-});
-
+const app = createApp();
 const port = Number(process.env.PORT || 3000);
+
 app.listen(port, () => console.log(`Server listening on ${port}`));
