@@ -4,238 +4,259 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, Tooltip,
   LineChart, Line, CartesianGrid, XAxis, YAxis, BarChart, Bar, Legend,
 } from 'recharts';
-import { TYPE_LABEL, TYPE_ICON } from './components/RiskCards';
+import { TYPE_LABEL, TYPE_ICON } from './fraudConstants';
 
-const PALETTE = ['#1e3a5f', '#dc2626', '#d97706', '#2563eb', '#059669', '#7c3aed', '#0891b2', '#db2777', '#65a30d', '#c2410c', '#0369a1'];
+// Design-system palette (from index.css tokens)
+const PALETTE = ['#1E3150', '#DC2626', '#D97706', '#5377A2', '#059669', '#7C3AED', '#0891B2', '#601A35', '#65A30D', '#C2410C', '#0369A1'];
 
-const Card = ({ title, children, style }) => (
-  <div style={{
-    background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12,
-    padding: '18px 20px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', ...style,
-  }}>
-    <h3 style={{ margin: '0 0 14px', fontSize: 14, color: '#1e293b', fontWeight: 700 }}>{title}</h3>
+const ChartCard = ({ title, children, note }) => (
+  <div className='fraud-card'>
+    <h3 className='fraud-card-title'>{title}</h3>
     {children}
+    {note && <p className='fraud-chart-label'>{note}</p>}
   </div>
 );
 
-const CustomTooltip = ({ active, payload, label }) => {
+const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: 8, padding: '8px 12px', fontSize: 12 }}>
-      {label && <div style={{ fontWeight: 700, marginBottom: 4, color: '#1e293b' }}>{label}</div>}
-      {payload.map((p) => (
-        <div key={p.name} style={{ color: p.color || '#64748b' }}>{p.name}: <b>{p.value}</b></div>
+    <div style={{
+      background: 'var(--card-bg)', border: '1px solid var(--border-color)',
+      borderRadius: '0.75rem', padding: '0.625rem 0.875rem', fontSize: '0.8125rem',
+      boxShadow: '0 4px 16px rgba(30,49,80,0.1)',
+    }}>
+      {label && <div style={{ fontWeight: 700, marginBottom: '0.25rem', color: 'var(--primary-color)' }}>{label}</div>}
+      {payload.map(p => (
+        <div key={p.name} style={{ color: p.color || 'var(--text-secondary)' }}>
+          {p.name}: <b>{p.value}</b>
+        </div>
       ))}
     </div>
   );
 };
 
+const axisStyle = { fontSize: 11, fill: '#5377A2' };
+
 const FraudAnalyticsPage = () => {
-  const { data } = useOutletContext();
+  const { data, loading } = useOutletContext();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div className='fraud-chart-grid-2'>
+          {[0, 1].map(i => <div key={i} className='fraud-skeleton' style={{ height: 320, borderRadius: '1rem' }} />)}
+        </div>
+        <div className='fraud-chart-grid-2'>
+          {[0, 1].map(i => <div key={i} className='fraud-skeleton' style={{ height: 280, borderRadius: '1rem' }} />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (!data.flags.length && !data.runs.length) {
+    return (
+      <div className='fraud-card'>
+        <div className='fraud-empty'>
+          <div className='fraud-empty-icon'>📊</div>
+          <p className='fraud-empty-title'>No analytics data yet</p>
+          <p className='fraud-empty-sub'>Run AI Detection to generate charts and trend data.</p>
+        </div>
+      </div>
+    );
+  }
 
   // 1. Detection type distribution
   const typeDistribution = useMemo(() => {
-    const m = new Map();
-    data.flags.forEach((f) => {
-      const key = f.finding_type || 'unknown';
-      m.set(key, (m.get(key) || 0) + 1);
-    });
-    return Array.from(m.entries())
-      .sort((a, b) => b[1] - a[1])
-      .map(([name, value]) => ({ name: `${TYPE_ICON[name] || '🔍'} ${TYPE_LABEL[name] || name}`, rawName: name, value }));
+    const m = {};
+    data.flags.forEach(f => { m[f.finding_type || 'unknown'] = (m[f.finding_type || 'unknown'] || 0) + 1; });
+    return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({
+      name: `${TYPE_ICON[name] || '🔍'} ${TYPE_LABEL[name] || name}`,
+      rawName: name, value,
+    }));
   }, [data.flags]);
 
   // 2. Severity distribution
-  const severityDistribution = useMemo(() => {
-    const levels = ['Critical', 'High', 'Medium', 'Low'];
-    const colors = { Critical: '#7f1d1d', High: '#dc2626', Medium: '#d97706', Low: '#2563eb' };
-    return levels.map((name) => ({
-      name,
-      value: data.flags.filter((f) => f.severity === name).length,
-      fill: colors[name],
-    }));
-  }, [data.flags]);
+  const severityDist = useMemo(() => [
+    { name: 'Critical', value: data.flags.filter(f => f.severity === 'Critical').length, fill: '#7F1D1D' },
+    { name: 'High',     value: data.flags.filter(f => f.severity === 'High').length,     fill: '#DC2626' },
+    { name: 'Medium',   value: data.flags.filter(f => f.severity === 'Medium').length,   fill: '#D97706' },
+    { name: 'Low',      value: data.flags.filter(f => f.severity === 'Low').length,       fill: '#2563EB' },
+  ], [data.flags]);
 
-  // 3. Run-over-run trend
-  const trend = useMemo(() =>
-    data.runs.slice().reverse().map((r, i) => ({
-      run:     `R${i + 1}`,
-      flags:    Number(r.summary?.flags_detected  || 0),
-      highRisk: Number(r.summary?.high_risk_cases || 0),
-    })),
-  [data.runs]);
+  // 3. Risk score histogram
+  const histogram = useMemo(() => [
+    { name: '0–20',  count: data.flags.filter(f => Number(f.risk_score||0) <= 20).length },
+    { name: '21–40', count: data.flags.filter(f => { const s = Number(f.risk_score||0); return s > 20 && s <= 40; }).length },
+    { name: '41–60', count: data.flags.filter(f => { const s = Number(f.risk_score||0); return s > 40 && s <= 60; }).length },
+    { name: '61–80', count: data.flags.filter(f => { const s = Number(f.risk_score||0); return s > 60 && s <= 80; }).length },
+    { name: '81–100',count: data.flags.filter(f => Number(f.risk_score||0) > 80).length },
+  ], [data.flags]);
 
-  // 4. Data-confidence distribution for contractor findings
+  // 4. Data confidence donut
   const confidence = useMemo(() => {
     const m = { low: 0, medium: 0, high: 0 };
-    data.flags.forEach((f) => {
-      const dc = f.evidence?.data_confidence;
-      if (dc && m[dc] !== undefined) m[dc]++;
-    });
+    data.flags.forEach(f => { const dc = f.evidence?.data_confidence; if (dc && m[dc] !== undefined) m[dc]++; });
     return [
-      { name: 'Low',    value: m.low,    fill: '#dc2626' },
-      { name: 'Medium', value: m.medium, fill: '#d97706' },
-      { name: 'High',   value: m.high,   fill: '#16a34a' },
+      { name: 'Low',    value: m.low,    fill: '#DC2626' },
+      { name: 'Medium', value: m.medium, fill: '#D97706' },
+      { name: 'High',   value: m.high,   fill: '#059669' },
     ];
   }, [data.flags]);
 
-  // 5. Risk score histogram (buckets 0-20, 20-40, …)
-  const histogram = useMemo(() => {
-    const buckets = [
-      { name: '0–20', min: 0,  max: 20  },
-      { name: '21–40',min: 21, max: 40  },
-      { name: '41–60',min: 41, max: 60  },
-      { name: '61–80',min: 61, max: 80  },
-      { name: '81–100',min:81, max: 100 },
-    ];
-    return buckets.map(({ name, min, max }) => ({
-      name,
-      count: data.flags.filter((f) => { const s = Number(f.risk_score || 0); return s >= min && s <= max; }).length,
-    }));
-  }, [data.flags]);
-
-  // 6. Welfare vs contract fraud split
-  const entitySplit = useMemo(() => {
-    const byType = {};
-    data.flags.forEach((f) => {
-      const t = f.entity_type || 'other';
-      byType[t] = (byType[t] || 0) + 1;
-    });
-    return Object.entries(byType).map(([name, value]) => ({ name, value }));
-  }, [data.flags]);
-
-  // 7. Value share for top contractors
-  const contractorValueShare = useMemo(() =>
-    (data.flags)
-      .filter((f) => f.finding_type === 'contractor_risk' && f.evidence?.value_share)
+  // 5. Contractor value share
+  const contractorShare = useMemo(() =>
+    data.flags
+      .filter(f => f.finding_type === 'contractor_risk' && f.evidence?.value_share)
       .sort((a, b) => (b.evidence.value_share || 0) - (a.evidence.value_share || 0))
       .slice(0, 8)
-      .map((f) => ({
-        name: (f.evidence?.contractor || f.entity_id || '').slice(0, 20),
+      .map(f => ({
+        name:       (f.evidence?.contractor || f.entity_id || '').slice(0, 20),
         valueShare: +((f.evidence.value_share || 0) * 100).toFixed(1),
         riskScore:  Math.round(Number(f.risk_score || 0)),
       })),
   [data.flags]);
 
+  // 6. Entity type split
+  const entitySplit = useMemo(() => {
+    const m = {};
+    data.flags.forEach(f => { m[f.entity_type || 'other'] = (m[f.entity_type || 'other'] || 0) + 1; });
+    return Object.entries(m).map(([name, value]) => ({ name, value }));
+  }, [data.flags]);
+
+  // 7. Run trend
+  const trend = useMemo(() =>
+    data.runs.slice().reverse().map((r, i) => ({
+      run:     `R${i + 1}`,
+      flags:   Number(r.summary?.flags_detected  || 0),
+      highRisk:Number(r.summary?.high_risk_cases || 0),
+    })),
+  [data.runs]);
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
       {/* Row 1: Type pie + Severity bar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <Card title='🔍 Detection Type Distribution'>
+      <div className='fraud-chart-grid-2'>
+        <ChartCard title='🔍 Detection Type Distribution'>
           <div style={{ height: 280 }}>
             <ResponsiveContainer width='100%' height='100%'>
               <PieChart>
-                <Pie data={typeDistribution} dataKey='value' nameKey='name' outerRadius={90} label={({ name, percent }) => `${(percent * 100).toFixed(0)}%`}>
-                  {typeDistribution.map((entry, i) => <Cell key={entry.rawName} fill={PALETTE[i % PALETTE.length]} />)}
+                <Pie data={typeDistribution} dataKey='value' nameKey='name' outerRadius={90}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}>
+                  {typeDistribution.map((e, i) => <Cell key={e.rawName} fill={PALETTE[i % PALETTE.length]} />)}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<ChartTooltip />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </ChartCard>
 
-        <Card title='🌡️ Severity Distribution'>
+        <ChartCard title='🌡️ Severity Distribution'>
           <div style={{ height: 280 }}>
             <ResponsiveContainer width='100%' height='100%'>
-              <BarChart data={severityDistribution} barSize={40}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#f1f5f9' />
-                <XAxis dataKey='name' tick={{ fontSize: 12 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
+              <BarChart data={severityDist} barSize={40}>
+                <CartesianGrid strokeDasharray='3 3' stroke='#E8E8E8' />
+                <XAxis dataKey='name' tick={axisStyle} />
+                <YAxis allowDecimals={false} tick={axisStyle} />
+                <Tooltip content={<ChartTooltip />} />
                 <Bar dataKey='value' radius={[6, 6, 0, 0]}>
-                  {severityDistribution.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
+                  {severityDist.map(e => <Cell key={e.name} fill={e.fill} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </ChartCard>
       </div>
 
-      {/* Row 2: Risk score histogram + Data confidence */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <Card title='📊 Risk Score Histogram'>
+      {/* Row 2: Risk histogram + Data confidence */}
+      <div className='fraud-chart-grid-2'>
+        <ChartCard title='📊 Risk Score Distribution'>
           <div style={{ height: 240 }}>
             <ResponsiveContainer width='100%' height='100%'>
               <BarChart data={histogram} barSize={36}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#f1f5f9' />
-                <XAxis dataKey='name' tick={{ fontSize: 12 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey='count' name='Findings' fill='#dc2626' radius={[6, 6, 0, 0]} />
+                <CartesianGrid strokeDasharray='3 3' stroke='#E8E8E8' />
+                <XAxis dataKey='name' tick={axisStyle} />
+                <YAxis allowDecimals={false} tick={axisStyle} />
+                <Tooltip content={<ChartTooltip />} />
+                <Bar dataKey='count' name='Findings' fill='#DC2626' radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card>
+        </ChartCard>
 
-        <Card title='🎯 Data Confidence (Contractor Findings)'>
+        <ChartCard title='🎯 Data Confidence' note='Low = <5 tenders · Medium = 5–19 · High = 20+'>
+          <div style={{ height: 220 }}>
+            <ResponsiveContainer width='100%' height='100%'>
+              <PieChart>
+                <Pie data={confidence} dataKey='value' nameKey='name' outerRadius={80} innerRadius={45}
+                  label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}>
+                  {confidence.map(e => <Cell key={e.name} fill={e.fill} />)}
+                </Pie>
+                <Tooltip content={<ChartTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
+      </div>
+
+      {/* Row 3: Contractor value share (only if data exists) */}
+      {contractorShare.length > 0 && (
+        <ChartCard title='🏗️ Contractor Value Share (Top Flagged)'>
+          <div style={{ height: 260 }}>
+            <ResponsiveContainer width='100%' height='100%'>
+              <BarChart data={contractorShare} layout='vertical' barSize={14}>
+                <CartesianGrid strokeDasharray='3 3' stroke='#E8E8E8' horizontal={false} />
+                <XAxis type='number' unit='%' tick={axisStyle} />
+                <YAxis type='category' dataKey='name' width={150} tick={axisStyle} />
+                <Tooltip content={<ChartTooltip />} />
+                <Legend wrapperStyle={{ fontSize: '0.8125rem', color: '#5377A2' }} />
+                <Bar dataKey='valueShare' name='Value Share %' fill='#DC2626' radius={[0, 4, 4, 0]} />
+                <Bar dataKey='riskScore'  name='Risk Score'    fill='#D97706' radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
+      )}
+
+      {/* Row 4: Entity split + Trend */}
+      <div className='fraud-chart-grid-3-1'>
+        <ChartCard title='📉 Flags Trend by Detection Run'>
+          <div style={{ height: 240 }}>
+            <ResponsiveContainer width='100%' height='100%'>
+              {trend.length > 0 ? (
+                <LineChart data={trend}>
+                  <CartesianGrid strokeDasharray='3 3' stroke='#E8E8E8' />
+                  <XAxis dataKey='run' tick={axisStyle} />
+                  <YAxis tick={axisStyle} />
+                  <Tooltip content={<ChartTooltip />} />
+                  <Legend wrapperStyle={{ fontSize: '0.8125rem', color: '#5377A2' }} />
+                  <Line type='monotone' dataKey='flags'    name='Total Flags' stroke='#1E3150' strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type='monotone' dataKey='highRisk' name='High Risk'   stroke='#DC2626' strokeWidth={2} dot={{ r: 3 }} />
+                </LineChart>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#5377A2', fontSize: '0.875rem' }}>
+                  No run history yet
+                </div>
+              )}
+            </ResponsiveContainer>
+          </div>
+        </ChartCard>
+
+        <ChartCard title='🗂️ Entity Type Split'>
           <div style={{ height: 240 }}>
             <ResponsiveContainer width='100%' height='100%'>
               <PieChart>
-                <Pie data={confidence} dataKey='value' nameKey='name' outerRadius={80} innerRadius={40}
-                  label={({ name, value }) => value > 0 ? `${name}: ${value}` : ''}>
-                  {confidence.map((entry) => <Cell key={entry.name} fill={entry.fill} />)}
+                <Pie data={entitySplit} dataKey='value' nameKey='name' outerRadius={80}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                  {entitySplit.map((e, i) => <Cell key={e.name} fill={PALETTE[i % PALETTE.length]} />)}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<ChartTooltip />} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 4 }}>
-            Low = &lt;5 tenders | Medium = 5–19 | High = 20+
-          </div>
-        </Card>
+        </ChartCard>
       </div>
 
-      {/* Row 3: Contractor value share */}
-      {contractorValueShare.length > 0 && (
-        <Card title='🏗️ Contractor Value Share (Top Flagged)'>
-          <div style={{ height: 260 }}>
-            <ResponsiveContainer width='100%' height='100%'>
-              <BarChart data={contractorValueShare} layout='vertical' barSize={16}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#f1f5f9' horizontal={false} />
-                <XAxis type='number' unit='%' tick={{ fontSize: 11 }} />
-                <YAxis type='category' dataKey='name' width={140} tick={{ fontSize: 11 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Bar dataKey='valueShare' name='Value Share %' fill='#dc2626' radius={[0, 4, 4, 0]} />
-                <Bar dataKey='riskScore'  name='Risk Score'    fill='#d97706' radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      )}
-
-      {/* Row 4: Entity type split + run trend */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 16 }}>
-        <Card title='🗂️ Entity Type Split'>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width='100%' height='100%'>
-              <PieChart>
-                <Pie data={entitySplit} dataKey='value' nameKey='name' outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-                  {entitySplit.map((entry, i) => <Cell key={entry.name} fill={PALETTE[i % PALETTE.length]} />)}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        <Card title='📉 Flags Trend by Detection Run'>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width='100%' height='100%'>
-              <LineChart data={trend}>
-                <CartesianGrid strokeDasharray='3 3' stroke='#f1f5f9' />
-                <XAxis dataKey='run' tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line type='monotone' dataKey='flags'    name='Total Flags' stroke='#1e3a5f' strokeWidth={2} dot={{ r: 3 }} />
-                <Line type='monotone' dataKey='highRisk' name='High Risk'   stroke='#dc2626' strokeWidth={2} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
     </div>
   );
 };
