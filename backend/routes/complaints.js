@@ -5,32 +5,83 @@ const auth = require("../middleware/auth");
 const { pool } = require("../db"); 
 const axios = require("axios"); 
  
-// Create complaint (calls ML) 
-router.post("/", auth, async (req, res) => { 
-  const { title, text, lat, lng, attachment_url, location_address, consent_given } = req.body; 
-  if (!title || !text || lat == null || lng == null) return res.status(400).json({ error: "Missing fields" }); 
-  let category = null, priority = null; 
-  try { 
-    const ml = await axios.post(`${process.env.ML_SERVICE_URL}/classify`, { text }, { timeout: 
-3000 }); 
-    category = ml.data.category; 
-    priority = ml.data.priority; 
-  } catch (err) { 
-    category = "other"; priority = 0.2; 
-  } 
-  try { 
-    const q = `INSERT INTO complaints 
-(user_id,title,text,category,priority,location_geometry,location_address,attachment_url,consent_given) 
-               VALUES ($1,$2,$3,$4,$5,ST_SetSRID(ST_MakePoint($6,$7),4326),$8,$9,$10) 
-RETURNING *`; 
-    const vals = [req.user.id, title, text, category, priority, lng, lat, location_address || null, 
-attachment_url || null, consent_given || false]; 
-    const result = await pool.query(q, vals); 
-    res.status(201).json(result.rows[0]); 
-  } catch (err) { 
-    console.error(err); 
-    res.status(500).json({ error: "DB error" }); 
-  } 
+// ---------------------------------------------------------------
+// Priority sentiment boost thresholds
+// ---------------------------------------------------------------
+const SENTIMENT_BOOST_HIGH     = 0.15;  // compound <= -0.50
+const SENTIMENT_BOOST_MODERATE = 0.08;  // compound <= -0.20
+
+// Create complaint (calls ML classifier + sentiment service)
+router.post("/", auth, async (req, res) => {
+  const { title, text, lat, lng, attachment_url, location_address, consent_given } = req.body;
+  if (!title || !text || lat == null || lng == null)
+    return res.status(400).json({ error: "Missing fields" });
+
+  // ── 1. Classify (category + base priority) ──────────────────
+  let category = null, priority = 0.2;
+  try {
+    const ml = await axios.post(
+      `${process.env.ML_SERVICE_URL}/classify`,
+      { text },
+      { timeout: 3000 }
+    );
+    category = ml.data.category;
+    priority = ml.data.priority;
+  } catch (err) {
+    console.warn("[complaints] Classifier unavailable, using defaults:", err.message);
+    category = "other";
+    priority = 0.2;
+  }
+
+  // ── 2. Sentiment analysis (priority boost) ───────────────────
+  let sentimentLabel = "neutral", sentimentScore = 0.0;
+  try {
+    const SENTIMENT_URL =
+      process.env.SENTIMENT_SERVICE_URL || "http://localhost:6001";
+    const sv = await axios.post(
+      `${SENTIMENT_URL}/sentiment`,
+      { text },
+      { timeout: 3000 }
+    );
+    sentimentLabel = sv.data.label  || "neutral";
+    sentimentScore = sv.data.score  ?? 0.0;
+
+    // Apply boost: more negative → higher urgency
+    if (sentimentScore <= -0.50) {
+      priority = Math.min(1.0, priority + SENTIMENT_BOOST_HIGH);
+      console.info(`[complaints] Sentiment boost HIGH (+${SENTIMENT_BOOST_HIGH}) → priority=${priority.toFixed(2)}`);
+    } else if (sentimentScore <= -0.20) {
+      priority = Math.min(1.0, priority + SENTIMENT_BOOST_MODERATE);
+      console.info(`[complaints] Sentiment boost MODERATE (+${SENTIMENT_BOOST_MODERATE}) → priority=${priority.toFixed(2)}`);
+    }
+  } catch (err) {
+    console.warn("[complaints] Sentiment service unavailable, skipping boost:", err.message);
+  }
+
+  // ── 3. Persist ───────────────────────────────────────────────
+  try {
+    const q = `
+      INSERT INTO complaints
+        (user_id, title, text, category, priority,
+         location_geometry, location_address, attachment_url, consent_given,
+         sentiment, sentiment_score)
+      VALUES
+        ($1,$2,$3,$4,$5,
+         ST_SetSRID(ST_MakePoint($6,$7),4326),$8,$9,$10,
+         $11,$12)
+      RETURNING *`;
+    const vals = [
+      req.user.id, title, text, category, priority,
+      lng, lat, location_address || null,
+      attachment_url || null, consent_given || false,
+      sentimentLabel, sentimentScore,
+    ];
+    const result = await pool.query(q, vals);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("[complaints] DB error:", err);
+    res.status(500).json({ error: "DB error" });
+  }
 }); 
  
 // List complaints (filters + pagination) 
