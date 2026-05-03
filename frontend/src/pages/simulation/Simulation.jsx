@@ -474,10 +474,15 @@ const Simulation = () => {
 
     return () => {
       clearInterval(pollRef.current);
-      // Abort any in-flight consequence fetch on unmount or dep change.
-      if (consequenceAbortRef.current) consequenceAbortRef.current.abort();
     };
   }, [simulationId, loading, pushNewSteps]);
+
+  // Unmount-only cleanup for the consequence fetch AbortController
+  useEffect(() => {
+    return () => {
+      if (consequenceAbortRef.current) consequenceAbortRef.current.abort();
+    };
+  }, []);
 
   // ── Run handler ───────────────────────────────────────────────────────────
   // Fix 3: no inline result ingest. POST returns only simulation_id + status='started'.

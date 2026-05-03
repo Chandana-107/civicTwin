@@ -193,6 +193,10 @@ const SimulationCompare = ({ n, steps }) => {
   const [consErrorA,   setConsErrorA]   = useState('');
   const [consErrorB,   setConsErrorB]   = useState('');
 
+  // Abort controllers for consequence fetches
+  const consAbortRefA = useRef(null);
+  const consAbortRefB = useRef(null);
+
   // Divergence per metric: { gap, step }
   const [diverg, setDiverg] = useState(METRICS.map(() => null));
 
@@ -311,13 +315,25 @@ const SimulationCompare = ({ n, steps }) => {
             setFinalA(METRICS.map(m => m.derive(mbs, pA.total_steps - 1)));
             setMbsA(mbs);
             setConsLoadingA(true); setConsErrorA('');
+            
+            if (consAbortRefA.current) consAbortRefA.current.abort();
+            const controllerA = new AbortController();
+            consAbortRefA.current = controllerA;
+            const timerA = setTimeout(() => controllerA.abort(), 25_000);
+
             fetch(`${SIM_API}/analyse/consequences`, {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
+              signal: controllerA.signal,
               body: JSON.stringify({ scenario: scenarioA, n_steps: pA.total_steps, n_agents: n, mean_by_step: mbs }),
             })
               .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
               .then(d => { setConsResultA(d); setConsLoadingA(false); })
-              .catch(e => { setConsErrorA(String(e)); setConsLoadingA(false); });
+              .catch(e => {
+                if (e?.name === 'AbortError') setConsErrorA('Analysis timed out — try again');
+                else setConsErrorA(String(e));
+                setConsLoadingA(false);
+              })
+              .finally(() => clearTimeout(timerA));
           }
           checkBothDone();
         } else if (pA.status === 'error') {
@@ -356,13 +372,25 @@ const SimulationCompare = ({ n, steps }) => {
             setFinalB(METRICS.map(m => m.derive(mbs, pB.total_steps - 1)));
             setMbsB(mbs);
             setConsLoadingB(true); setConsErrorB('');
+            
+            if (consAbortRefB.current) consAbortRefB.current.abort();
+            const controllerB = new AbortController();
+            consAbortRefB.current = controllerB;
+            const timerB = setTimeout(() => controllerB.abort(), 25_000);
+
             fetch(`${SIM_API}/analyse/consequences`, {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
+              signal: controllerB.signal,
               body: JSON.stringify({ scenario: scenarioB, n_steps: pB.total_steps, n_agents: n, mean_by_step: mbs }),
             })
               .then(r => r.ok ? r.json() : Promise.reject(`HTTP ${r.status}`))
               .then(d => { setConsResultB(d); setConsLoadingB(false); })
-              .catch(e => { setConsErrorB(String(e)); setConsLoadingB(false); });
+              .catch(e => {
+                if (e?.name === 'AbortError') setConsErrorB('Analysis timed out — try again');
+                else setConsErrorB(String(e));
+                setConsLoadingB(false);
+              })
+              .finally(() => clearTimeout(timerB));
           }
           checkBothDone();
         } else if (pB.status === 'error') {
@@ -376,6 +404,14 @@ const SimulationCompare = ({ n, steps }) => {
       } catch (_) { /* swallow transient network error, keep polling */ }
     }, 800);
   }, [pushSteps, checkBothDone]);
+
+  // Unmount-only cleanup for consequence AbortControllers
+  useEffect(() => {
+    return () => {
+      if (consAbortRefA.current) consAbortRefA.current.abort();
+      if (consAbortRefB.current) consAbortRefB.current.abort();
+    };
+  }, []);
 
   // ── Run comparison ────────────────────────────────────────────────────────
   const handleCompare = async () => {
