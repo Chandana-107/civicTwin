@@ -1,0 +1,236 @@
+{
+  "audit_timestamp": "2026-05-03T12:56:47.415206+00:00",
+  "services": [
+    {
+      "name": "classifier_service",
+      "status": "DEGRADED",
+      "metrics": {
+        "accuracy": 0.94,
+        "precision_macro": 0.9426,
+        "recall_macro": 0.94,
+        "f1_macro": 0.9399,
+        "avg_confidence": 0.449,
+        "error_rate": 0.06,
+        "latency_p50_ms": 2072,
+        "latency_p95_ms": 2089
+      },
+      "class_breakdown": [
+        {
+          "class": "road",
+          "precision": 0.8889,
+          "recall": 0.96,
+          "f1": 0.9231,
+          "support": 25
+        },
+        {
+          "class": "water",
+          "precision": 0.9615,
+          "recall": 1.0,
+          "f1": 0.9804,
+          "support": 25
+        },
+        {
+          "class": "electricity",
+          "precision": 1.0,
+          "recall": 0.88,
+          "f1": 0.9362,
+          "support": 25
+        },
+        {
+          "class": "sanitation",
+          "precision": 0.92,
+          "recall": 0.92,
+          "f1": 0.92,
+          "support": 25
+        }
+      ],
+      "flags": [
+        {
+          "type": "UNDERCONFIDENCE",
+          "detail": "72 correct predictions with conf<0.5"
+        },
+        {
+          "type": "LATENCY",
+          "detail": "p95 latency 2089ms exceeds 2000ms"
+        }
+      ],
+      "sample_failures": [
+        {
+          "input": "Pedestrian crossing faded completely",
+          "expected": "road",
+          "predicted": "water",
+          "confidence": 0.2751
+        },
+        {
+          "input": "Short circuit near shop causing smoke",
+          "expected": "electricity",
+          "predicted": "sanitation",
+          "confidence": 0.298
+        },
+        {
+          "input": "Electric wire fallen on road",
+          "expected": "electricity",
+          "predicted": "road",
+          "confidence": 0.3718
+        },
+        {
+          "input": "Short circuit causing blackout in area",
+          "expected": "electricity",
+          "predicted": "sanitation",
+          "confidence": 0.3086
+        },
+        {
+          "input": "Dead animal on street causing stench",
+          "expected": "sanitation",
+          "predicted": "road",
+          "confidence": 0.2915
+        }
+      ],
+      "api_errors": []
+    },
+    {
+      "name": "sentiment_service",
+      "status": "FAILING",
+      "metrics": {
+        "accuracy": 0.79,
+        "precision_macro": 0.7893,
+        "recall_macro": 0.7897,
+        "f1_macro": 0.7884,
+        "avg_confidence": 0.3775,
+        "error_rate": 0.21,
+        "latency_p50_ms": 2071,
+        "latency_p95_ms": 2089
+      },
+      "class_breakdown": [
+        {
+          "class": "positive",
+          "precision": 0.8235,
+          "recall": 0.8235,
+          "f1": 0.8235,
+          "support": 34
+        },
+        {
+          "class": "negative",
+          "precision": 0.7778,
+          "recall": 0.8485,
+          "f1": 0.8116,
+          "support": 33
+        },
+        {
+          "class": "neutral",
+          "precision": 0.7667,
+          "recall": 0.697,
+          "f1": 0.7302,
+          "support": 33
+        }
+      ],
+      "flags": [
+        {
+          "type": "FAILING",
+          "detail": "Accuracy 79.0% is below 80% threshold"
+        },
+        {
+          "type": "UNDERCONFIDENCE",
+          "detail": "41 correct predictions with conf<0.5"
+        },
+        {
+          "type": "LATENCY",
+          "detail": "p95 latency 2089ms exceeds 2000ms"
+        }
+      ],
+      "sample_failures": [
+        {
+          "input": "Drainage blockage cleared, no more flooding",
+          "expected": "positive",
+          "predicted": "negative",
+          "confidence": 0.2023
+        },
+        {
+          "input": "Overhead water tank serviced properly now",
+          "expected": "positive",
+          "predicted": "neutral",
+          "confidence": 0.0
+        },
+        {
+          "input": "Garbage bins cleaned and sanitized regularly",
+          "expected": "positive",
+          "predicted": "neutral",
+          "confidence": 0.0
+        },
+        {
+          "input": "Traffic signal working now, smooth flow",
+          "expected": "positive",
+          "predicted": "neutral",
+          "confidence": 0.0
+        },
+        {
+          "input": "Sewage cleaned, no more foul smell in area",
+          "expected": "positive",
+          "predicted": "negative",
+          "confidence": 0.296
+        }
+      ],
+      "api_errors": []
+    },
+    {
+      "name": "topic_service",
+      "status": "DEGRADED",
+      "metrics": {
+        "accuracy": 1.0,
+        "precision_macro": 1.0,
+        "recall_macro": 1.0,
+        "f1_macro": 1.0,
+        "avg_confidence": 0.9037,
+        "error_rate": 0.0,
+        "latency_p50_ms": 2088,
+        "latency_p95_ms": 2102
+      },
+      "class_breakdown": [
+        {
+          "class": "road",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 3
+        },
+        {
+          "class": "water",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 3
+        },
+        {
+          "class": "electricity",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 2
+        },
+        {
+          "class": "garbage",
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 2
+        }
+      ],
+      "flags": [
+        {
+          "type": "LATENCY",
+          "detail": "p95 latency 2102ms exceeds 2000ms"
+        }
+      ],
+      "sample_failures": [],
+      "api_errors": []
+    }
+  ],
+  "summary": {
+    "total_services": 3,
+    "passing": 0,
+    "failing": 1,
+    "degraded": 2,
+    "unreachable": 0,
+    "overall_recommendation": "Immediate investigation required for FAILING services."
+  }
+}
