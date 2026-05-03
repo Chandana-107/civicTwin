@@ -1,0 +1,237 @@
+/* ─── simulation.css ─────────────────────────────────────────────────────────
+ * Shared styles for Simulation, SimulationCompare, ResourceOptimizer.
+ * Imported once via SimulationLayout.jsx.
+ * Only uses colour tokens already defined in index.css :root.
+ * ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Page container ─────────────────────────────────────────────────────────── */
+.sim-page {
+  padding: 2rem 1.5rem;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+/* ── Page header — matches fraud-page-header layout ─────────────────────────── */
+.sim-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sim-header-title {
+  margin: 0;
+  color: var(--primary-color);
+  font-size: 1.55rem;
+  font-weight: 700;
+}
+
+.sim-header-subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+
+/* ── Shared card token ───────────────────────────────────────────────────────── */
+.sim-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+
+/* Apply to cards the user can interact with (hover lift) */
+.sim-card-interactive {
+  cursor: pointer;
+}
+
+.sim-card-interactive:hover {
+  box-shadow: 0 4px 16px rgba(30, 49, 80, 0.12);
+  border-color: var(--primary-light);
+}
+
+/* ── Skeleton loader ─────────────────────────────────────────────────────────── */
+@keyframes sim-skeleton-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1;    }
+}
+
+.sim-skeleton {
+  background: #e5e7eb;
+  border-radius: 0.375rem;
+  animation: sim-skeleton-pulse 1.4s ease-in-out infinite;
+  display: block;
+}
+
+/* ── Empty state ─────────────────────────────────────────────────────────────── */
+.sim-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  border: 1px dashed var(--border-color);
+  border-radius: 0.75rem;
+  background: var(--light-bg);
+  margin-top: 0.5rem;
+}
+
+.sim-empty-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  color: var(--primary-light);
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.sim-empty-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.4rem;
+}
+
+.sim-empty-message {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 28rem;
+  line-height: 1.55;
+}
+
+/* ── Error card ──────────────────────────────────────────────────────────────── */
+.sim-error-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 4px solid var(--danger-color);
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-bottom: 1rem;
+}
+
+.sim-error-icon {
+  font-size: 1rem;
+  line-height: 1.5;
+  flex-shrink: 0;
+}
+
+.sim-error-message {
+  font-size: 0.875rem;
+  color: var(--danger-color);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.sim-error-retry {
+  flex-shrink: 0;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid var(--danger-color);
+  border-radius: 0.375rem;
+  background: #ffffff;
+  color: var(--danger-color);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.sim-error-retry:hover {
+  background: #fef2f2;
+}
+
+/* ── Severity badge colour tokens (ConsequencePanel) ────────────────────────── */
+.sim-sev-high   { background: #FCEBEB; color: #A32D2D; }
+.sim-sev-medium { background: #FAEEDA; color: #633806; }
+.sim-sev-low    { background: #E1F5EE; color: #085041; }
+
+/* ── Recommended badge (ResourceOptimizer) ───────────────────────────────────── */
+.sim-recommended-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: var(--success-color);
+  color: #ffffff;
+  box-shadow: 0 0 8px rgba(5, 150, 105, 0.4);
+}
+
+/* Rank circle for recommended (top) variant */
+.sim-rank-circle-top {
+  background: var(--success-color) !important;
+  color: #ffffff !important;
+}
+
+/* Top VariantCard border/bg */
+.sim-variant-top {
+  border: 2px solid var(--success-color) !important;
+  background: #f0fdf4 !important;
+  box-shadow: 0 2px 12px rgba(5, 150, 105, 0.12) !important;
+}
+
+/* ── Compare grid — 2 col, stacks to 1 on mobile ────────────────────────────── */
+.sim-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.sim-compare-divider {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .sim-compare-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Show a visible "Scenario A / Scenario B" divider between the two cards */
+  .sim-compare-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0.25rem 0;
+  }
+
+  .sim-compare-divider::before,
+  .sim-compare-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+}
+
+/* ── Priority weights grid — 2 col on tablet, 1 col on mobile ───────────────── */
+.sim-weights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .sim-weights-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Button disabled state ───────────────────────────────────────────────────── */
+button:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: auto; /* keep cursor: not-allowed visible */
+}

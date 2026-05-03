@@ -28,10 +28,7 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true
       },
-      '/simulation': {
-        target: 'http://localhost:3000',
-        changeOrigin: true
-      },
+
       '/topics': {
         target: 'http://localhost:3000',
         changeOrigin: true
