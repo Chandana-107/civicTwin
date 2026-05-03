@@ -1,0 +1,26 @@
+# ── Chatbot API — Python 3.10 (matches Rasa venv) ────────────
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    fastapi==0.95.2 \
+    uvicorn==0.23.2 \
+    pydantic==1.10.9 \
+    starlette==0.27.0 \
+    psycopg2-binary==2.9.9 \
+    python-dotenv==1.0.1
+
+# The chatbot service uses: from chatbot.runtime.xxx import ...
+# So we copy everything under a /app/chatbot/ package, with a root __init__.py
+RUN mkdir -p /app/chatbot
+COPY chatbot/ /app/chatbot/
+
+# Create a minimal root __init__.py so Python treats /app as the package root
+RUN echo "" > /app/__init__.py
+
+WORKDIR /app
+EXPOSE 8002
+CMD ["python", "-m", "uvicorn", "chatbot.service.app:app", "--host", "0.0.0.0", "--port", "8002"]

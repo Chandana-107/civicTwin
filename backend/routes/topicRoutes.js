@@ -30,7 +30,8 @@ router.post('/extract_and_store', async (req, res) => {
     ];
 
     // call topic microservice
-    const resp = await axios.post('http://localhost:6002/extract', { documents, top_n: 30 });
+    const TOPIC_BASE = process.env.TOPIC_SERVICE_URL || 'http://localhost:6002';
+    const resp = await axios.post(`${TOPIC_BASE}/extract`, { documents, top_n: 30 });
     const topics = resp.data.topics || [];
 
     // store into daily_topics table (date, topic, category=null, score, occurrences=null)

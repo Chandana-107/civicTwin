@@ -4,11 +4,13 @@ const router = express.Router();
 const axios = require('axios');
 const { pool } = require('../db'); // adjust import to your db.js export
 
+const SENTIMENT_BASE = process.env.SENTIMENT_SERVICE_URL || 'http://localhost:6001';
+
 // POST /sentiment -> proxy to VADER service
 router.post('/', async (req, res) => {
   const text = req.body.text || '';
   try {
-    const resp = await axios.post('http://localhost:6001/sentiment', { text });
+    const resp = await axios.post(`${SENTIMENT_BASE}/sentiment`, { text });
     return res.json(resp.data);
   } catch (err) {
     console.error('Sentiment service error', err.message);
@@ -26,7 +28,7 @@ router.post('/store', async (req, res) => {
   if (!table || !id || !text) return res.status(400).json({ error: 'table,id,text required' });
 
   try {
-    const resp = await axios.post('http://localhost:6001/sentiment', { text });
+    const resp = await axios.post(`${SENTIMENT_BASE}/sentiment`, { text });
     const { label, score } = resp.data;
 
     // sanitize table

@@ -34,7 +34,12 @@ class ClassifyReq(BaseModel):
 
 # PATHS (relative to your structure)
 MODEL_DIR = "models"
-PRIORITY_KEYWORDS_FILE = "../../configs/priority_keywords.json"
+# Supports both local dev (relative) and Docker (/config/) via env var
+PRIORITY_KEYWORDS_FILE = os.environ.get(
+    "PRIORITY_KEYWORDS_FILE",
+    "/config/priority_keywords.json" if os.path.exists("/config/priority_keywords.json")
+    else "../../config/priority_keywords.json"
+)
 
 # GLOBALS
 vectorizer = None

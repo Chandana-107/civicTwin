@@ -1,0 +1,44 @@
+# Python virtual environments
+myenv/
+.venv/
+chatbot/.venv/
+ml/myenv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/*.egg-info/
+
+# Node
+**/node_modules/
+**/npm-debug.log*
+frontend/dist/
+
+# Git
+.git/
+.gitignore
+
+# Env files (injected at runtime via docker-compose)
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Rasa trained models are large -- included selectively via chatbot/Dockerfile.rasa
+# chatbot/rasa/models/ is needed so don't exclude it
+
+# Test / scratch / reports
+reports/
+scripts/
+
+# Other Docker files (don't nest)
+**/Dockerfile*
+docker-compose*.yml

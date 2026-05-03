@@ -1,0 +1,178 @@
+# ============================================================
+#  CivicTwin — Docker Compose
+#  Usage:
+#    docker compose up --build          # first run
+#    docker compose up                  # subsequent runs
+#    docker compose down                # stop + remove containers
+#    docker compose down -v             # also wipe DB volume
+# ============================================================
+
+services:
+
+  # ── 1. PostgreSQL + PostGIS ─────────────────────────────────
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: civictwin_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       civictwin
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-PSQL87}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Init scripts run in alphabetical order on first start
+      - ./infra/db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+      - ./infra/db/schema.sql:/docker-entrypoint-initdb.d/02_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d civictwin"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── 2. Node.js Backend API (Port 3000) ──────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: civictwin_backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST:               postgres
+      DB_PORT:               5432
+      DB_NAME:               civictwin
+      DB_USER:               postgres
+      DB_PASSWORD:           ${DB_PASSWORD:-PSQL87}
+      JWT_SECRET:            ${JWT_SECRET}
+      ML_SERVICE_URL:        http://classifier:8001
+      FRAUD_SERVICE_URL:     http://simulation:8003
+      SENTIMENT_SERVICE_URL: http://sentiment:6001
+      TOPIC_SERVICE_URL:     http://topic:6002
+      WHATSAPP_PHONE_NUMBER_ID: ${WHATSAPP_PHONE_NUMBER_ID:-}
+      WHATSAPP_TOKEN:        ${WHATSAPP_TOKEN:-}
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── 3. ML Classifier Service (Port 8001) ────────────────────
+  classifier:
+    build:
+      context: .
+      dockerfile: ./ml/classifier_service/Dockerfile
+    container_name: civictwin_classifier
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8001/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── 4. Sentiment Service — VADER (Port 6001) ────────────────
+  sentiment:
+    build:
+      context: ./ml/sentiment_service
+      dockerfile: Dockerfile
+    container_name: civictwin_sentiment
+    restart: unless-stopped
+    ports:
+      - "6001:6001"
+
+  # ── 5. Topic Extraction Service (Port 6002) ─────────────────
+  topic:
+    build:
+      context: ./ml/topic_service
+      dockerfile: Dockerfile
+    container_name: civictwin_topic
+    restart: unless-stopped
+    ports:
+      - "6002:6002"
+
+  # ── 6. Simulation + Fraud Anomaly Service (Port 8003) ───────
+  simulation:
+    build:
+      context: ./simulation_service
+      dockerfile: Dockerfile
+    container_name: civictwin_simulation
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8003/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── 7. Rasa NLU Server (Port 5005) ──────────────────────────
+  rasa:
+    build:
+      context: ./chatbot/rasa
+      dockerfile: ../Dockerfile.rasa
+    container_name: civictwin_rasa
+    restart: unless-stopped
+    ports:
+      - "5005:5005"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5005/status || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 30s
+
+  # ── 8. Chatbot API (Port 8002) ──────────────────────────────
+  chatbot:
+    build:
+      context: .
+      dockerfile: ./chatbot/Dockerfile.api
+    container_name: civictwin_chatbot
+    restart: unless-stopped
+    depends_on:
+      - rasa
+      - backend
+    environment:
+      DB_HOST:         postgres
+      DB_PORT:         5432
+      DB_NAME:         civictwin
+      DB_USER:         postgres
+      DB_PASSWORD:     ${DB_PASSWORD:-PSQL87}
+      BACKEND_API_URL: http://backend:3000
+      RASA_REST_URL:   http://rasa:5005/webhooks/rest/webhook
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8002/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── 9. React Frontend — Vite Dev (Port 5173) ────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: civictwin_frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      # Vite reads VITE_* vars at runtime in dev mode
+      VITE_API_URL:            http://localhost:3000
+      VITE_SIMULATION_API_URL: http://localhost:8003
+      VITE_CHATBOT_API_URL:    http://localhost:8002
+    ports:
+      - "5173:5173"
+
+# ── Volumes ───────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    name: civictwin_pgdata
