@@ -1,0 +1,1184 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SocialFeedAdmin.css
+   Social Feed Dashboard — Admin Side
+   Matches CivicTwin Admin design system: navy (#1E3150), gold (#E5D38A),
+   muted blue (#5377A2), burgundy (#601A35), light gray (#F1F1F1)
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Page Layout ──────────────────────────────────────────────────────────── */
+.sfa-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(229, 211, 138, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(83, 119, 162, 0.08) 0%, transparent 50%),
+    linear-gradient(135deg, #FAFAFA 0%, #F1F1F1 50%, #E8E8E8 100%);
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .sfa-page { padding: 1rem; }
+}
+
+.sfa-center {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* ── Page Header ──────────────────────────────────────────────────────────── */
+.sfa-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid rgba(229, 211, 138, 0.3);
+  box-shadow: 0 2px 12px rgba(30, 49, 80, 0.08);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sfa-topbar h2 {
+  margin: 0;
+  color: #1E3150;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sfa-topbar h2 .sfa-title-icon {
+  font-size: 1.4rem;
+}
+
+.sfa-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ── Module header (new tab layout) ──────────────────────────────────────── */
+.sfa-module-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sfa-module-title {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  color: #1E3150;
+}
+
+.sfa-module-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: #5377A2;
+}
+
+.sfa-module-actions {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ── Tab navigation ───────────────────────────────────────────────────────── */
+.sfa-tab-nav {
+  display: flex;
+  gap: 0.2rem;
+  border-bottom: 2px solid #E2E8F0;
+  margin-bottom: 1.5rem;
+}
+
+.sfa-tab-btn {
+  padding: 0.875rem 1.4rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #5377A2;
+  opacity: 0.7;
+  transition: all 0.22s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  letter-spacing: 0.1px;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.sfa-tab-btn:hover,
+.sfa-tab-btn.active {
+  opacity: 1;
+  color: #1E3150;
+}
+
+.sfa-tab-btn.active {
+  border-bottom-color: #1E3150;
+}
+
+/* ── Overview page stats grid ─────────────────────────────────────────────── */
+.sfa-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sfa-stat-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem 1rem;
+  box-shadow: 0 2px 12px rgba(30, 49, 80, 0.08);
+  border: 1px solid #E2E8F0;
+  border-top: 4px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.sfa-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 49, 80, 0.12);
+}
+
+.sfa-stat-icon  { font-size: 1.3rem; }
+
+.sfa-stat-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1E3150;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.sfa-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #5377A2;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.sfa-stat-sub {
+  font-size: 0.7rem;
+  color: #94A3B8;
+}
+
+/* ── Overview cards ───────────────────────────────────────────────────────── */
+.sfa-overview-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 12px rgba(30, 49, 80, 0.07);
+  margin-bottom: 1.5rem;
+}
+
+.sfa-overview-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.15rem;
+  color: #1E3150;
+  margin: 0 0 1.1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #E5D38A;
+}
+
+/* Priority breakdown */
+.sfa-breakdown-row {
+  display: grid;
+  grid-template-columns: 110px 1fr 2.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.sfa-breakdown-label {
+  font-size: 0.82rem;
+  color: #5377A2;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.sfa-breakdown-track {
+  background: #F1F5F9;
+  border-radius: 999px;
+  height: 7px;
+  overflow: hidden;
+}
+
+.sfa-breakdown-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #1E3150 0%, #601A35 100%);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sfa-breakdown-count {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1E3150;
+  text-align: right;
+}
+
+/* Top posts list */
+.sfa-top-posts-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.sfa-top-post-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #F8FAFC;
+  border-radius: 0.6rem;
+  border: 1px solid #E2E8F0;
+}
+
+.sfa-top-post-rank {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #E5D38A;
+  background: #1E3150;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.sfa-top-post-info { flex: 1; min-width: 0; }
+
+.sfa-top-post-text {
+  font-size: 0.875rem;
+  color: #1E3150;
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sfa-top-post-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  color: #5377A2;
+  margin: 0;
+  flex-wrap: wrap;
+}
+
+.sfa-top-post-score {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1E3150;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+
+
+/* ── Shared Button Styles ─────────────────────────────────────────────────── */
+.sfa-btn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.sfa-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sfa-btn-primary {
+  background: linear-gradient(135deg, #1E3150 0%, #5377A2 100%);
+  color: white;
+}
+
+.sfa-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0F1828 0%, #1E3150 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(30, 49, 80, 0.3);
+}
+
+.sfa-btn-gold {
+  background: #E5D38A;
+  color: #1E3150;
+}
+
+.sfa-btn-gold:hover:not(:disabled) {
+  background: #D4C070;
+  transform: translateY(-1px);
+}
+
+.sfa-btn-outline {
+  background: transparent;
+  border: 1.5px solid #1E3150;
+  color: #1E3150;
+}
+
+.sfa-btn-outline:hover:not(:disabled) {
+  background: #1E3150;
+  color: white;
+}
+
+.sfa-btn-danger {
+  background: transparent;
+  border: 1.5px solid #DC2626;
+  color: #DC2626;
+}
+
+.sfa-btn-danger:hover:not(:disabled) {
+  background: #DC2626;
+  color: white;
+}
+
+.sfa-btn-ghost {
+  background: transparent;
+  border: 1.5px solid #D1D5DB;
+  color: #5377A2;
+}
+
+.sfa-btn-ghost:hover:not(:disabled) {
+  border-color: #5377A2;
+  background: #EFF6FF;
+}
+
+.sfa-btn-sm {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  border-radius: 0.4rem;
+}
+
+/* ── Composer Card ────────────────────────────────────────────────────────── */
+.sfa-composer {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(229, 211, 138, 0.3);
+  border-top: 4px solid #E5D38A;
+  box-shadow: 0 4px 16px rgba(30, 49, 80, 0.08);
+}
+
+.sfa-composer h3 {
+  margin: 0 0 1.25rem 0;
+  color: #1E3150;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sfa-composer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+@media (max-width: 600px) {
+  .sfa-composer-grid { grid-template-columns: 1fr; }
+}
+
+.sfa-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.sfa-form-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #5377A2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sfa-input,
+.sfa-select,
+.sfa-textarea {
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #D1D5DB;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  color: #1E3150;
+  background: #FAFAFA;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+  width: 100%;
+}
+
+.sfa-input:focus,
+.sfa-select:focus,
+.sfa-textarea:focus {
+  outline: none;
+  border-color: #5377A2;
+  box-shadow: 0 0 0 3px rgba(83, 119, 162, 0.12);
+  background: white;
+}
+
+.sfa-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.sfa-priority-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.sfa-priority-chip {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.18s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.sfa-priority-chip.low    { background: #D1FAE5; color: #065F46; border-color: #A7F3D0; }
+.sfa-priority-chip.medium { background: #E0E7FF; color: #3730A3; border-color: #C7D2FE; }
+.sfa-priority-chip.high   { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
+.sfa-priority-chip.urgent { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
+
+.sfa-priority-chip.selected.low    { background: #059669; color: white; border-color: #059669; }
+.sfa-priority-chip.selected.medium { background: #3730A3; color: white; border-color: #3730A3; }
+.sfa-priority-chip.selected.high   { background: #D97706; color: white; border-color: #D97706; }
+.sfa-priority-chip.selected.urgent { background: #DC2626; color: white; border-color: #DC2626; }
+
+.sfa-drop-zone {
+  border: 2px dashed #D1D5DB;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  color: #5377A2;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+}
+
+.sfa-drop-zone.dragging {
+  border-color: #1E3150;
+  background: #EFF6FF;
+  color: #1E3150;
+}
+
+.sfa-image-preview {
+  width: 100%;
+  max-height: 280px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* ── Post Extras (Emoji + BG Color) ─────────────────────────────────────── */
+.sfa-extras-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sfa-extras-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  position: relative;
+}
+
+/* ── BG Color preview card ───────────────────────────────────────────────── */
+
+.sfa-bg-picker-wrap {
+  width: 100%;
+  max-width: 320px;
+}
+
+.sfa-bg-preview-card {
+  border: 1.5px solid #D1D5DB;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: white;
+  width: 100%;
+}
+
+.sfa-bg-preview-card:hover {
+  border-color: #5377A2;
+  box-shadow: 0 0 0 3px rgba(83, 119, 162, 0.12);
+}
+
+/* Tall color strip at the top */
+.sfa-bg-strip {
+  height: 56px;
+  width: 100%;
+  display: block;
+  transition: background 0.25s ease;
+}
+
+/* Info row: label on left, hex on right */
+.sfa-bg-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.45rem 0.65rem 0 0.65rem;
+}
+
+.sfa-bg-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E3150;
+}
+
+.sfa-bg-hex {
+  font-size: 0.72rem;
+  font-family: 'Courier New', monospace;
+  color: #5377A2;
+  letter-spacing: 0.4px;
+}
+
+/* Preset swatches row */
+.sfa-bg-presets {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.65rem 0.55rem 0.65rem;
+}
+
+.sfa-bg-preset-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.sfa-bg-preset-dot:hover {
+  transform: scale(1.18);
+}
+
+.sfa-bg-preset-dot.active {
+  border-color: #E5D38A;
+  box-shadow: 0 0 0 2px #1E3150;
+}
+
+/* Custom "+" button */
+.sfa-bg-preset-custom {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px dashed #D1D5DB;
+  background: white;
+  color: #5377A2;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: border-color 0.15s ease, color 0.15s ease;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.sfa-bg-preset-custom:hover {
+  border-color: #5377A2;
+  color: #1E3150;
+}
+
+
+
+/* ── Feed Post Card ───────────────────────────────────────────────────────── */
+.sfa-feed {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.sfa-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(229, 211, 138, 0.25);
+  box-shadow: 0 2px 12px rgba(30, 49, 80, 0.08);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  position: relative;
+}
+
+.sfa-card:hover {
+  box-shadow: 0 6px 24px rgba(30, 49, 80, 0.13);
+}
+
+.sfa-card.pinned {
+  border-left: 4px solid #E5D38A;
+}
+
+.sfa-card.archived {
+  opacity: 0.62;
+  border-left: 4px solid #D1D5DB;
+}
+
+/* Pin ribbon */
+.sfa-pin-ribbon {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  background: #E5D38A;
+  color: #1E3150;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+/* Post header */
+.sfa-post-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.sfa-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #1E3150, #5377A2);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.sfa-post-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.sfa-author-name {
+  margin: 0;
+  font-weight: 700;
+  color: #1E3150;
+  font-size: 0.92rem;
+}
+
+.sfa-post-time {
+  margin: 0.15rem 0 0 0;
+  color: #5377A2;
+  font-size: 0.75rem;
+}
+
+.sfa-tags-row {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+/* Chips & tags */
+.sfa-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.sfa-tag-dept {
+  background: #EFF6FF;
+  color: #1E3150;
+  border: 1px solid #BFDBFE;
+}
+
+.sfa-tag-cat {
+  background: #F1F1F1;
+  color: #5377A2;
+  border: 1px solid #E5D38A;
+}
+
+.sfa-tag-priority-low    { background: #D1FAE5; color: #065F46; }
+.sfa-tag-priority-medium { background: #E0E7FF; color: #3730A3; }
+.sfa-tag-priority-high   { background: #FEF3C7; color: #92400E; }
+.sfa-tag-priority-urgent { background: #FEE2E2; color: #991B1B; }
+
+.sfa-tag-sentiment-positive { background: #D1FAE5; color: #065F46; }
+.sfa-tag-sentiment-negative { background: #FEE2E2; color: #991B1B; }
+.sfa-tag-sentiment-neutral  { background: #E0E7FF; color: #3730A3; }
+
+/* Post body */
+.sfa-post-media {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.sfa-post-bg-panel {
+  width: 100%;
+  min-height: 180px;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.sfa-post-bg-panel p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.sfa-post-text {
+  color: #1E3150;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  margin: 0 0 0.85rem 0;
+}
+
+/* ── Metrics bar (chip grid) ──────────────────────────────────────────────── */
+.sfa-metrics-bar {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.sfa-metric-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.55rem 0.25rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.65rem;
+  text-align: center;
+}
+
+.sfa-metric-icon { font-size: 1rem; line-height: 1; }
+
+.sfa-metric-val {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1E3150;
+  line-height: 1;
+}
+
+.sfa-metric-lbl {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+/* ── Engagement action group ──────────────────────────────────────────────── */
+.sfa-action-group {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.65rem 0;
+  border-top: 1px solid #F1F5F9;
+}
+
+.sfa-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.42rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1.5px solid #E2E8F0;
+  background: white;
+  color: #5377A2;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  font-family: inherit;
+}
+
+.sfa-action-btn:hover {
+  background: #EFF6FF;
+  border-color: #5377A2;
+  color: #1E3150;
+}
+
+.sfa-action-btn--active {
+  background: #FEE2E2;
+  border-color: #FECACA;
+  color: #991B1B;
+}
+
+/* ── Admin controls row ───────────────────────────────────────────────────── */
+.sfa-admin-controls {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0 0.25rem;
+  border-top: 1px dashed #E2E8F0;
+  margin-top: 0.1rem;
+}
+
+.sfa-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.38rem 0.85rem;
+  border-radius: 0.5rem;
+  border: 1.5px solid #E2E8F0;
+  background: #F8FAFC;
+  color: #374151;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.16s ease;
+  font-family: inherit;
+}
+
+.sfa-admin-btn:hover {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+.sfa-admin-btn--active {
+  background: #EFF6FF;
+  border-color: #BFDBFE;
+  color: #1E40AF;
+}
+
+.sfa-admin-btn--danger {
+  color: #DC2626;
+  border-color: #FECACA;
+  background: #FFF5F5;
+}
+
+.sfa-admin-btn--danger:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+
+
+/* Comment section */
+.sfa-comments-wrap {
+  border-top: 1px solid #E5E7EB;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+}
+
+.sfa-comment-input-row {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 0.65rem;
+}
+
+.sfa-comment-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.sfa-comments-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.sfa-comment-item {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+}
+
+.sfa-comment-item p {
+  margin: 0;
+  color: #1E3150;
+  font-size: 0.88rem;
+}
+
+.sfa-comment-time {
+  margin-top: 0.3rem !important;
+  color: #5377A2 !important;
+  font-size: 0.72rem !important;
+}
+
+.sfa-no-comments {
+  color: #5377A2;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* AI Summary Panel */
+.sfa-ai-panel {
+  margin-top: 0.85rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #EFF6FF 0%, #F0F4FF 100%);
+  border: 1px solid #BFDBFE;
+  padding: 1rem 1.1rem;
+}
+
+.sfa-ai-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.sfa-ai-panel-header h4 {
+  margin: 0;
+  color: #1E3150;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: 'Playfair Display', serif;
+}
+
+.sfa-ai-badge {
+  background: linear-gradient(135deg, #1E3150 0%, #5377A2 100%);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sfa-ai-field {
+  margin-bottom: 0.55rem;
+}
+
+.sfa-ai-field-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #5377A2;
+  margin-bottom: 0.2rem;
+}
+
+.sfa-ai-field-value {
+  font-size: 0.875rem;
+  color: #1E3150;
+  line-height: 1.5;
+}
+
+/* ── Skeleton Loading ─────────────────────────────────────────────────────── */
+@keyframes sfaShimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+.sfa-skeleton-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 2px 8px rgba(30, 49, 80, 0.06);
+}
+
+.sfa-skeleton-line {
+  border-radius: 4px;
+  background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 40%, #F1F5F9 80%);
+  background-size: 600px 100%;
+  animation: sfaShimmer 1.4s ease infinite;
+}
+
+.sfa-skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 40%, #F1F5F9 80%);
+  background-size: 600px 100%;
+  animation: sfaShimmer 1.4s ease infinite;
+  flex-shrink: 0;
+}
+
+.sfa-skeleton-media {
+  width: 100%;
+  height: 180px;
+  border-radius: 0.75rem;
+  background: linear-gradient(90deg, #F1F5F9 0%, #E2E8F0 40%, #F1F5F9 80%);
+  background-size: 600px 100%;
+  animation: sfaShimmer 1.4s ease infinite;
+  margin-bottom: 0.85rem;
+}
+
+/* ── Empty & Error States ─────────────────────────────────────────────────── */
+.sfa-empty-state,
+.sfa-error-state {
+  background: white;
+  border-radius: 1rem;
+  padding: 3rem 2rem;
+  text-align: center;
+  border: 1px solid rgba(229, 211, 138, 0.25);
+  box-shadow: 0 2px 8px rgba(30, 49, 80, 0.06);
+}
+
+.sfa-empty-icon,
+.sfa-error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.sfa-empty-state h3,
+.sfa-error-state h3 {
+  color: #1E3150;
+  font-family: 'Playfair Display', serif;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.sfa-empty-state p,
+.sfa-error-state p {
+  color: #5377A2;
+  margin: 0 0 1.25rem 0;
+  font-size: 0.94rem;
+}
+
+.sfa-error-state {
+  border-top: 4px solid #DC2626;
+}
+
+/* ── Pagination bar ───────────────────────────────────────────────────────── */
+.sfa-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  background: white;
+  border: 1px solid rgba(229, 211, 138, 0.35);
+  border-radius: 0.85rem;
+  padding: 0.75rem 1rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 2px 10px rgba(30, 49, 80, 0.07);
+}
+
+.sfa-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sfa-page-num {
+  min-width: 34px;
+  height: 34px;
+  border-radius: 0.45rem;
+  border: 1.5px solid #E2E8F0;
+  background: white;
+  color: #1E3150;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: grid;
+  place-items: center;
+  padding: 0 0.35rem;
+  font-family: inherit;
+}
+
+.sfa-page-num:hover {
+  border-color: #5377A2;
+  background: #EFF6FF;
+}
+
+.sfa-page-num.active {
+  background: #1E3150;
+  border-color: #1E3150;
+  color: #E5D38A;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(30, 49, 80, 0.25);
+}
+
+.sfa-page-ellipsis {
+  color: #5377A2;
+  font-size: 0.9rem;
+  padding: 0 0.15rem;
+  user-select: none;
+}
+
+.sfa-page-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.52rem 1.1rem;
+  border-radius: 0.6rem;
+  border: 1.5px solid #1E3150;
+  background: white;
+  color: #1E3150;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sfa-page-btn:hover:not(:disabled) {
+  background: #1E3150;
+  color: #E5D38A;
+  box-shadow: 0 3px 10px rgba(30, 49, 80, 0.25);
+  transform: translateY(-1px);
+}
+
+.sfa-page-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 480px) {
+  .sfa-pagination   { flex-wrap: wrap; justify-content: center; }
+  .sfa-page-btn     { padding: 0.45rem 0.75rem; font-size: 0.8rem; }
+  .sfa-page-num     { min-width: 30px; height: 30px; font-size: 0.8rem; }
+}
+
+
+/* ── Heart pop animation ──────────────────────────────────────────────────── */
+@keyframes sfaHeartPop {
+  0%   { transform: scale(0.85); }
+  60%  { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+
+.sfa-heart-pop { animation: sfaHeartPop 260ms ease; }

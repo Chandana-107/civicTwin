@@ -24,7 +24,10 @@ import FraudNetworkPage from './pages/admin/fraud/FraudNetworkPage'
 import FraudRunsPage from './pages/admin/fraud/FraudRunsPage'
 import FraudAnalyticsPage from './pages/admin/fraud/FraudAnalyticsPage'
 import SentimentDashboard from './pages/admin/SentimentDashboard'
-import SocialFeedDashboard from './pages/admin/SocialFeedDashboard'
+import SocialFeedModule   from './pages/admin/social/SocialFeedModule'
+import SocialOverviewPage from './pages/admin/social/SocialOverviewPage'
+import SocialComposePage  from './pages/admin/social/SocialComposePage'
+import SocialFeedPage     from './pages/admin/social/SocialFeedPage'
 import Simulation from './pages/simulation/Simulation'
 
 function App() {
@@ -57,7 +60,11 @@ function App() {
           </Route>
 
           <Route path='/admin/sentiment' element={<ProtectedRoute allowedRoles={['admin']}><SentimentDashboard /></ProtectedRoute>} />
-          <Route path='/admin/social-feed' element={<ProtectedRoute allowedRoles={['admin']}><SocialFeedDashboard /></ProtectedRoute>} />
+          <Route path='/admin/social-feed' element={<ProtectedRoute allowedRoles={['admin']}><SocialFeedModule /></ProtectedRoute>}>
+            <Route index        element={<SocialOverviewPage />} />
+            <Route path='compose' element={<SocialComposePage />} />
+            <Route path='feed'    element={<SocialFeedPage />} />
+          </Route>
           <Route path='/simulation' element={<ProtectedRoute allowedRoles={['admin']}><Simulation /></ProtectedRoute>} />
 
           <Route path='/' element={<Navigate to='/login' replace />} />
