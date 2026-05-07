@@ -126,77 +126,305 @@
   margin: 0;
 }
 
-/* File Complaint Styles */
-.complaint-form-container {
+/* ── Premium File Complaint UI ────────────────────────────────────────────── */
+.fc-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #F1F1F1 0%, #E5E8EC 100%);
-  padding: 2rem;
+  padding: 2.5rem 1.5rem;
 }
 
-.complaint-form-card {
+.fc-card {
   background: white;
-  border-radius: 1rem;
-  padding: 2.5rem;
-  max-width: 700px;
+  border-radius: 1.25rem;
+  max-width: 780px;
   margin: 0 auto;
-  box-shadow: 0 4px 16px rgba(30, 49, 80, 0.1);
-  border-top: 4px solid #E5D38A;
+  box-shadow: 0 8px 32px rgba(30, 49, 80, 0.06);
+  border-top: 6px solid #E5D38A;
+  overflow: hidden;
 }
 
-.complaint-form-card h2 {
-  margin-bottom: 1.5rem;
-  color: #1E3150;
-  font-family: 'Playfair Display', serif;
-  font-size: 1.75rem;
+.fc-header {
+  padding: 2.5rem 2.5rem 1.5rem;
+  background: #FAFAFA;
+  border-bottom: 1px solid #F1F5F9;
   text-align: center;
 }
 
-.location-button-group {
+.fc-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: #1E3150;
+  font-family: 'Playfair Display', serif;
+  font-size: 2.1rem;
+}
+
+.fc-header p {
+  margin: 0;
+  color: #64748B;
+  font-size: 0.95rem;
+}
+
+.fc-body {
+  padding: 2rem 2.5rem;
+}
+
+.fc-section {
+  background: #ffffff;
+  border: 1px solid #E2E8F0;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.fc-section:focus-within {
+  border-color: #5377A2;
+  box-shadow: 0 0 0 3px rgba(83, 119, 162, 0.1);
+}
+
+.fc-section-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: #5377A2;
+  margin: 0 0 1rem 0;
   display: flex;
-  gap: 1rem;
   align-items: center;
+  gap: 0.5rem;
+}
+
+.fc-group {
+  margin-bottom: 1rem;
+}
+
+.fc-group:last-child {
+  margin-bottom: 0;
+}
+
+.fc-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1E3150;
   margin-bottom: 0.5rem;
 }
 
-.location-success {
-  font-size: 0.9rem;
-  color: #059669;
-  font-weight: 500;
-}
-
-.consent-checkbox-group {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-  padding: 1rem;
-  background: #F1F1F1;
+.fc-input, .fc-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid #E2E8F0;
   border-radius: 0.5rem;
-  border: 1px solid #E5D38A;
+  font-size: 0.95rem;
+  color: #1E3150;
+  background: #F8FAFC;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.consent-checkbox-group input[type="checkbox"] {
-  margin-top: 0.25rem;
-  width: 18px;
-  height: 18px;
+.fc-input:focus, .fc-textarea:focus {
+  outline: none;
+  border-color: #5377A2;
+  background: white;
+}
+
+.fc-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.fc-location-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.fc-btn-location {
+  background: #1E3150;
+  color: #E5D38A;
+  border: none;
+  padding: 0.7rem 1.25rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fc-btn-location:hover {
+  background: #2c4770;
+  transform: translateY(-1px);
+}
+
+.fc-location-badge {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.fc-dropzone {
+  border: 2px dashed #CBD5E1;
+  border-radius: 0.75rem;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  background: #F8FAFC;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.fc-dropzone:hover, .fc-dropzone.dragging {
+  border-color: #5377A2;
+  background: #EFF6FF;
+}
+
+.fc-dropzone-content {
+  color: #64748B;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fc-dropzone-icon {
+  font-size: 2rem;
+}
+
+.fc-preview-wrap {
+  position: relative;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: inline-block;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  background: white;
+}
+
+.fc-preview-img {
+  display: block;
+  max-width: 100%;
+  max-height: 250px;
+  object-fit: contain;
+}
+
+.fc-btn-remove-img {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(30, 49, 80, 0.75);
+  color: white;
+  border: none;
+  font-size: 1rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease;
+}
+
+.fc-btn-remove-img:hover {
+  background: rgba(220, 38, 38, 0.9);
+}
+
+.fc-consent-box {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.fc-consent-box:hover {
+  background: #E0F2FE;
+}
+
+.fc-consent-checkbox {
+  width: 22px;
+  height: 22px;
   accent-color: #1E3150;
+  margin-top: 0.15rem;
+  cursor: pointer;
 }
 
-.consent-checkbox-group label {
-  cursor: pointer;
+.fc-consent-text {
   color: #1E3150;
   font-size: 0.95rem;
   line-height: 1.5;
+  user-select: none;
 }
 
-.form-actions {
+.fc-actions {
   display: flex;
   gap: 1rem;
-  margin-top: 2rem;
+  padding: 1.5rem 2.5rem 2.5rem;
+  background: white;
 }
 
-.form-actions .btn-primary {
+.fc-btn {
+  padding: 0.85rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.fc-btn-cancel {
+  background: transparent;
+  color: #64748B;
+  border: 1.5px solid #CBD5E1;
+}
+
+.fc-btn-cancel:hover {
+  background: #F1F5F9;
+  color: #1E3150;
+  border-color: #94A3B8;
+}
+
+.fc-btn-submit {
   flex: 1;
+  background: #1E3150;
+  color: white;
+  border: 1.5px solid #1E3150;
+  box-shadow: 0 4px 12px rgba(30, 49, 80, 0.2);
+}
+
+.fc-btn-submit:hover:not(:disabled) {
+  background: #2c4770;
+  border-color: #2c4770;
+  transform: translateY(-2px);
+}
+
+.fc-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .fc-body { padding: 1.5rem; }
+  .fc-header { padding: 2rem 1.5rem 1rem; }
+  .fc-actions { padding: 1rem 1.5rem 2rem; flex-direction: column; }
+  .fc-location-row { flex-direction: column; align-items: stretch; }
+  .fc-btn-location { justify-content: center; }
 }
 
 /* My Complaints Styles */

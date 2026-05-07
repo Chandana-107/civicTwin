@@ -7,7 +7,7 @@ const axios = require('axios');
 
 const ALLOWED_REACTIONS = ['like', 'love', 'care', 'wow', 'concern'];
 const ALLOWED_PRIORITIES = ['low', 'medium', 'high', 'urgent'];
-const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 
 let cachedResolvedGeminiModel = null;
 
@@ -149,6 +149,7 @@ const resolveGeminiModel = async (apiKey) => {
   if (cachedResolvedGeminiModel) return cachedResolvedGeminiModel;
   const preferredCandidates = [
     sanitizeModelName(process.env.GEMINI_MODEL),
+    'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-2.0-flash-lite',
     'gemini-1.5-flash-latest',

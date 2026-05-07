@@ -13,31 +13,55 @@ const getLuminance = (hex) => {
   return 0.299 * r + 0.587 * g + 0.114 * b;
 };
 
+const getTextColor   = (hex) => getLuminance(hex) < 0.5 ? '#FFFFFF' : '#1E3150';
+const getSubtleColor = (hex) => getLuminance(hex) < 0.5 ? 'rgba(255,255,255,0.75)' : '#5377A2';
+const getBorderColor = (hex) => getLuminance(hex) < 0.5 ? 'rgba(255,255,255,0.18)' : 'rgba(229,211,138,0.35)';
+
+const CIVIC_PALETTE = [
+  { bg: 'linear-gradient(135deg, #1E3150 0%, #5377A2 100%)', dark: true  },
+  { bg: 'linear-gradient(135deg, #5377A2 0%, #1E3150 100%)', dark: true  },
+  { bg: 'linear-gradient(135deg, #1E3150 0%, #601A35 100%)', dark: true  },
+  { bg: 'linear-gradient(135deg, #601A35 0%, #1E3150 100%)', dark: true  },
+  { bg: 'linear-gradient(135deg, #059669 0%, #1E3150 100%)', dark: true  },
+  { bg: 'linear-gradient(135deg, #1E3150 0%, #D97706 100%)', dark: true  },
+  { bg: 'linear-gradient(135deg, #EFF6FF 0%, #BFDBFE 100%)', dark: false },
+  { bg: 'linear-gradient(135deg, #F1F5F9 0%, #E5D38A 100%)', dark: false },
+];
+
+const getFallbackEntry = (post) => {
+  const id = String(post.id || '');
+  const seed = (id.charCodeAt(0) || 0) + (id.charCodeAt(4) || 0) + (id.charCodeAt(8) || 0);
+  return CIVIC_PALETTE[seed % CIVIC_PALETTE.length];
+};
+
 /* ── Sub-components ──────────────────────────────────────────── */
-const MetricsBar = ({ post }) => {
+const MetricsBar = ({ post, textColor }) => {
   const rc = post.reaction_counts || {};
   const totalReactions = Object.values(rc).reduce((s, v) => s + Number(v || 0), 0);
+  const bg = textColor === '#FFFFFF' ? 'rgba(255,255,255,0.1)' : '#F8FAFC';
+  const border = textColor === '#FFFFFF' ? 'rgba(255,255,255,0.2)' : '#E2E8F0';
+  
   return (
     <div className="sfa-metrics-bar">
-      <div className="sfa-metric-chip">
+      <div className="sfa-metric-chip" style={{ background: bg, borderColor: border, color: textColor }}>
         <span className="sfa-metric-icon">👁️</span>
         <span className="sfa-metric-val">{Number(post.view_count || 0)}</span>
-        <span className="sfa-metric-lbl">Views</span>
+        <span className="sfa-metric-lbl" style={{ color: textColor, opacity: 0.8 }}>Views</span>
       </div>
-      <div className="sfa-metric-chip">
+      <div className="sfa-metric-chip" style={{ background: bg, borderColor: border, color: textColor }}>
         <span className="sfa-metric-icon">❤️</span>
         <span className="sfa-metric-val">{totalReactions}</span>
-        <span className="sfa-metric-lbl">Reactions</span>
+        <span className="sfa-metric-lbl" style={{ color: textColor, opacity: 0.8 }}>Reactions</span>
       </div>
-      <div className="sfa-metric-chip">
+      <div className="sfa-metric-chip" style={{ background: bg, borderColor: border, color: textColor }}>
         <span className="sfa-metric-icon">💬</span>
         <span className="sfa-metric-val">{post.comments_count || 0}</span>
-        <span className="sfa-metric-lbl">Comments</span>
+        <span className="sfa-metric-lbl" style={{ color: textColor, opacity: 0.8 }}>Comments</span>
       </div>
-      <div className="sfa-metric-chip">
+      <div className="sfa-metric-chip" style={{ background: bg, borderColor: border, color: textColor }}>
         <span className="sfa-metric-icon">🔖</span>
         <span className="sfa-metric-val">{post.saves_count || 0}</span>
-        <span className="sfa-metric-lbl">Saves</span>
+        <span className="sfa-metric-lbl" style={{ color: textColor, opacity: 0.8 }}>Saves</span>
       </div>
     </div>
   );
@@ -56,7 +80,7 @@ const AiPanel = ({ postId }) => {
   };
   if (!summary) return (
     <div style={{ marginTop: '0.75rem' }}>
-      <button className="sfa-btn sfa-btn-ghost sfa-btn-sm" onClick={fetchSummary} disabled={loading}>
+      <button className="sfa-btn sfa-btn-ghost sfa-btn-sm" onClick={fetchSummary} disabled={loading} style={{ background: 'rgba(255,255,255,0.2)', color: 'inherit', borderColor: 'currentColor' }}>
         {loading ? '⏳ Generating…' : '✨ Generate AI Summary'}
       </button>
     </div>
@@ -99,16 +123,27 @@ const CommentSection = ({ isOpen, comments, draft, onDraftChange, onSubmit }) =>
   );
 };
 
-const PostCard = ({ post, onDelete, onPin, onArchive }) => {
-  const textColor = getLuminance(post.post_background || '') < 140 ? '#fff' : '#111827';
+const PostCard = ({ post, onDelete, onPin, onArchive, onImageClick }) => {
+  const rawBg = post.post_background || null;
+  const fallback = getFallbackEntry(post);
+  const effectiveBg = rawBg || fallback.bg;
+
+  const isDark      = rawBg ? getLuminance(rawBg) < 0.5 : fallback.dark;
+  const textColor   = isDark ? '#FFFFFF' : '#1E3150';
+  const subtleColor = isDark ? 'rgba(255,255,255,0.75)' : '#5377A2';
+  const borderColor = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(229,211,138,0.35)';
+
   return (
-    <article className={`sfa-card${post.is_pinned ? ' pinned' : ''}${post.is_archived ? ' archived' : ''}`}>
+    <article 
+      className={`sfa-card${post.is_pinned ? ' pinned' : ''}${post.is_archived ? ' archived' : ''}`}
+      style={{ background: effectiveBg, borderColor, color: textColor }}
+    >
       {post.is_pinned && <span className="sfa-pin-ribbon">📌 Pinned</span>}
       <div className="sfa-post-header">
         <div className="sfa-avatar">{(post.author || 'A').slice(0, 1).toUpperCase()}</div>
         <div className="sfa-post-meta">
-          <p className="sfa-author-name">{post.author || 'Admin'}</p>
-          <p className="sfa-post-time">{post.posted_at ? new Date(post.posted_at).toLocaleString() : 'Unknown time'}</p>
+          <p className="sfa-author-name" style={{ color: textColor }}>{post.author || 'Admin'}</p>
+          <p className="sfa-post-time" style={{ color: subtleColor }}>{post.posted_at ? new Date(post.posted_at).toLocaleString() : 'Unknown time'}</p>
           <div className="sfa-tags-row">
             {post.department && <span className="sfa-tag sfa-tag-dept">🏛️ {post.department}</span>}
             {post.category   && <span className="sfa-tag sfa-tag-cat">📂 {post.category}</span>}
@@ -118,31 +153,36 @@ const PostCard = ({ post, onDelete, onPin, onArchive }) => {
           </div>
         </div>
       </div>
-      {post.image_url ? (
-        <img loading="lazy" src={post.image_url} alt="Post" className="sfa-post-media" />
-      ) : (
-        <div className="sfa-post-bg-panel" style={{ background: post.post_background || 'linear-gradient(135deg,#1E3150,#5377A2)' }}>
-          <p style={{ color: textColor }}>{post.text}</p>
-        </div>
+      
+      {post.image_url && (
+        <img loading="lazy" src={post.image_url} alt="Post" className="sfa-post-media" onClick={() => onImageClick && onImageClick(post.image_url)} style={{ cursor: 'pointer' }} />
       )}
-      {post.image_url && <p className="sfa-post-text">{post.text}</p>}
-      <MetricsBar post={post} />
+      
+      {post.text && (
+        <p className="sfa-post-text" style={{ color: textColor, padding: post.image_url ? '0' : '1rem 0', fontSize: '1.05rem' }}>
+          {post.text}
+        </p>
+      )}
+      
+      <MetricsBar post={post} textColor={textColor} />
 
       {/* ── Admin controls ─────────────────────────────────── */}
-      <div className="sfa-admin-controls">
+      <div className="sfa-admin-controls" style={{ borderTop: `1px solid ${borderColor}`, paddingTop: '0.85rem', marginTop: '0.5rem' }}>
         <button
           className={`sfa-admin-btn${post.is_pinned ? ' sfa-admin-btn--active' : ''}`}
           onClick={onPin}
+          style={{ borderColor, color: textColor, background: 'transparent' }}
         >
           📌 {post.is_pinned ? 'Unpin' : 'Pin'}
         </button>
         <button
           className={`sfa-admin-btn${post.is_archived ? ' sfa-admin-btn--active' : ''}`}
           onClick={onArchive}
+          style={{ borderColor, color: textColor, background: 'transparent' }}
         >
           🗃️ {post.is_archived ? 'Unarchive' : 'Archive'}
         </button>
-        <button className="sfa-admin-btn sfa-admin-btn--danger" onClick={onDelete}>
+        <button className="sfa-admin-btn sfa-admin-btn--danger" onClick={onDelete} style={{ background: 'transparent' }}>
           🗑️ Delete
         </button>
       </div>
@@ -173,6 +213,7 @@ const SocialFeedPage = () => {
   const { posts, loading, page, totalPages, fetchPosts, deletePost, pinPost, archivePost } = useOutletContext();
 
   const feedTopRef = useRef(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   const goToPage = (p) => {
     if (p < 1 || p > totalPages) return;
@@ -211,6 +252,7 @@ const SocialFeedPage = () => {
               onDelete={() => deletePost(post.id)}
               onPin={() => pinPost(post.id)}
               onArchive={() => archivePost(post.id)}
+              onImageClick={(url) => setLightboxImage(url)}
             />
           ))}
         </div>
@@ -230,6 +272,22 @@ const SocialFeedPage = () => {
             )}
           </div>
           <button className="sfa-page-btn" onClick={() => goToPage(page + 1)} disabled={page >= totalPages}>Next →</button>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'zoom-out' }}
+          onClick={() => setLightboxImage(null)}
+        >
+          <img src={lightboxImage} alt="Full screen view" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }} />
+          <button 
+            style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            onClick={(e) => { e.stopPropagation(); setLightboxImage(null); }}
+          >
+            ✕
+          </button>
         </div>
       )}
     </div>

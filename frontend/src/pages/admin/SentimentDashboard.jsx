@@ -69,7 +69,7 @@ const SentimentDashboard = () => {
                 <div className="page-header">
                     <h2>📊 Citizen Mood Monitoring</h2>
                     <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button onClick={runDailyAnalysis} className="btn btn-secondary">Run Daily Analysis</button>
+                        {/* <button onClick={runDailyAnalysis} className="btn btn-secondary">Run Daily Analysis</button> */}
                         <button
                             onClick={() => navigate(user?.role === 'admin' ? '/admin/dashboard' : '/citizen/dashboard')}
                             className="btn"

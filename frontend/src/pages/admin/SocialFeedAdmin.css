@@ -470,149 +470,212 @@
 .sfa-priority-chip.selected.high   { background: #D97706; color: white; border-color: #D97706; }
 .sfa-priority-chip.selected.urgent { background: #DC2626; color: white; border-color: #DC2626; }
 
-.sfa-drop-zone {
-  border: 2px dashed #D1D5DB;
-  border-radius: 0.75rem;
+/* ── New Premium Composer Layout ─────────────────────────────────────────── */
+
+.sfa-editor-area {
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem 0.75rem 0 0;
   padding: 1rem;
-  text-align: center;
-  cursor: pointer;
-  color: #5377A2;
-  font-size: 0.88rem;
-  transition: all 0.2s ease;
-  margin-bottom: 0.75rem;
-}
-
-.sfa-drop-zone.dragging {
-  border-color: #1E3150;
-  background: #EFF6FF;
-  color: #1E3150;
-}
-
-.sfa-image-preview {
-  width: 100%;
-  max-height: 280px;
-  object-fit: cover;
-  border-radius: 0.75rem;
-  margin-bottom: 0.75rem;
-  display: block;
-}
-
-/* ── Post Extras (Emoji + BG Color) ─────────────────────────────────────── */
-.sfa-extras-row {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.sfa-extras-item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.2s ease;
   position: relative;
-}
-
-/* ── BG Color preview card ───────────────────────────────────────────────── */
-
-.sfa-bg-picker-wrap {
-  width: 100%;
-  max-width: 320px;
-}
-
-.sfa-bg-preview-card {
-  border: 1.5px solid #D1D5DB;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background: white;
-  width: 100%;
-}
-
-.sfa-bg-preview-card:hover {
-  border-color: #5377A2;
-  box-shadow: 0 0 0 3px rgba(83, 119, 162, 0.12);
-}
-
-/* Tall color strip at the top */
-.sfa-bg-strip {
-  height: 56px;
-  width: 100%;
-  display: block;
-  transition: background 0.25s ease;
-}
-
-/* Info row: label on left, hex on right */
-.sfa-bg-info {
+  min-height: 140px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.45rem 0.65rem 0 0.65rem;
+  flex-direction: column;
 }
 
-.sfa-bg-label {
-  font-size: 0.8rem;
+.sfa-editor-area.dragging {
+  border-color: #5377A2;
+  background-color: rgba(83, 119, 162, 0.05) !important;
+}
+
+.sfa-editor-textarea {
+  width: 100%;
+  flex: 1;
+  border: none;
+  background: transparent;
+  resize: none;
+  font-size: 1.05rem;
+  font-family: inherit;
+  outline: none;
+  min-height: 80px;
+}
+
+.sfa-editor-textarea::placeholder {
+  color: inherit;
+  opacity: 0.6;
+}
+
+.sfa-editor-image-wrap {
+  position: relative;
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.05);
+  display: inline-block;
+  max-width: 100%;
+}
+
+.sfa-editor-image {
+  max-width: 100%;
+  max-height: 260px;
+  display: block;
+  object-fit: contain;
+}
+
+.sfa-editor-image-remove {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(30, 49, 80, 0.7);
+  color: white;
+  border: none;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease;
+}
+
+.sfa-editor-image-remove:hover {
+  background: rgba(220, 38, 38, 0.9);
+}
+
+.sfa-editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-top: none;
+  border-radius: 0 0 0.75rem 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.sfa-toolbar-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.sfa-toolbar-btn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
   font-weight: 600;
+  color: #5377A2;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sfa-toolbar-btn:hover, .sfa-toolbar-btn.active {
+  background: #E2E8F0;
   color: #1E3150;
 }
 
-.sfa-bg-hex {
-  font-size: 0.72rem;
-  font-family: 'Courier New', monospace;
-  color: #5377A2;
-  letter-spacing: 0.4px;
+.sfa-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 50;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(30, 49, 80, 0.15);
+  border: 1px solid #E2E8F0;
+  animation: sfa-popover-in 0.2s ease-out;
 }
 
-/* Preset swatches row */
-.sfa-bg-presets {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 0.65rem 0.55rem 0.65rem;
+@keyframes sfa-popover-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.sfa-bg-preset-dot {
-  width: 22px;
-  height: 22px;
+.sfa-color-popover {
+  padding: 0.75rem;
+}
+
+.sfa-color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.sfa-color-swatch {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  border: 2px solid rgba(0,0,0,0.1);
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease;
   padding: 0;
-  flex-shrink: 0;
 }
 
-.sfa-bg-preset-dot:hover {
-  transform: scale(1.18);
+.sfa-color-swatch:hover {
+  transform: scale(1.1);
 }
 
-.sfa-bg-preset-dot.active {
+.sfa-color-swatch.active {
   border-color: #E5D38A;
   box-shadow: 0 0 0 2px #1E3150;
 }
 
-/* Custom "+" button */
-.sfa-bg-preset-custom {
-  width: 22px;
-  height: 22px;
+.sfa-color-swatch-custom {
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2px dashed #D1D5DB;
-  background: white;
-  color: #5377A2;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
+  border: 2px dashed #CBD5E1;
   display: grid;
   place-items: center;
-  padding: 0;
-  transition: border-color 0.15s ease, color 0.15s ease;
-  flex-shrink: 0;
-  line-height: 1;
+  cursor: pointer;
+  color: #64748B;
+  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
 }
 
-.sfa-bg-preset-custom:hover {
+.sfa-color-swatch-custom:hover {
   border-color: #5377A2;
   color: #1E3150;
+  background: #F8FAFC;
+}
+
+.sfa-settings-panel {
+  background: #FAFAFA;
+  border: 1px solid #F1F5F9;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.sfa-settings-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 600px) {
+  .sfa-settings-row { grid-template-columns: 1fr; }
+}
+
+.sfa-composer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #E2E8F0;
 }
 
 

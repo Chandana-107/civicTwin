@@ -108,6 +108,7 @@ const SocialFeed = () => {
   const [total, setTotal] = useState(0);
   const [draftComments, setDraftComments] = useState({});
   const [openCommentsByPost, setOpenCommentsByPost] = useState({});
+  const [lightboxImage, setLightboxImage] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [deptFilter, setDeptFilter] = useState('');
   const [lastReadTs] = useState(() => {
@@ -348,7 +349,7 @@ const SocialFeed = () => {
 
                 {/* Image (if any) */}
                 {post.image_url && (
-                  <img src={post.image_url} alt="Social post" className="social-post-image" />
+                  <img src={post.image_url} alt="Social post" className="social-post-image" onClick={() => setLightboxImage(post.image_url)} style={{ cursor: 'pointer' }} />
                 )}
 
                 {/* Post text — colour always derived from background */}
@@ -468,6 +469,22 @@ const SocialFeed = () => {
             disabled={page >= totalPages}
           >
             Next →
+          </button>
+        </div>
+      )}
+
+      {/* Lightbox Modal */}
+      {lightboxImage && (
+        <div 
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 9999, display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'zoom-out' }}
+          onClick={() => setLightboxImage(null)}
+        >
+          <img src={lightboxImage} alt="Full screen view" style={{ maxWidth: '90%', maxHeight: '90%', objectFit: 'contain', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.5)' }} />
+          <button 
+            style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'rgba(0,0,0,0.5)', color: 'white', border: 'none', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.5rem', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            onClick={(e) => { e.stopPropagation(); setLightboxImage(null); }}
+          >
+            ✕
           </button>
         </div>
       )}
