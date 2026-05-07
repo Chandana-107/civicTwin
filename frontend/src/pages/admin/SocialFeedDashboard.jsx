@@ -10,6 +10,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const getMediaUrl = (url) => {
   if (!url) return null;
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (/^[a-f0-9]{24}$/i.test(url)) return `${API_BASE_URL}/social/image/${url}`;
   return `${API_BASE_URL}${url}`;
 };
 

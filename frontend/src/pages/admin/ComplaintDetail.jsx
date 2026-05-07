@@ -4,6 +4,14 @@ import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import './Admin.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const getComplaintMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (/^[a-f0-9]{24}$/i.test(url)) return `${API_BASE_URL}/complaints/image/${url}`;
+    return `${API_BASE_URL}${url}`;
+};
+
 const ComplaintDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -111,7 +119,7 @@ const ComplaintDetail = () => {
                             {complaint.attachment_url && (
                                 <div style={{ marginTop: '1.5rem' }}>
                                     <strong style={{ color: '#1E3150', display: 'block', marginBottom: '0.75rem' }}>Attachment:</strong>
-                                    <img src={complaint.attachment_url} alt="Attachment" style={{ maxWidth: '100%', borderRadius: '0.75rem' }} />
+                                    <img src={getComplaintMediaUrl(complaint.attachment_url)} alt="Attachment" style={{ maxWidth: '100%', borderRadius: '0.75rem' }} />
                                 </div>
                             )}
                         </div>

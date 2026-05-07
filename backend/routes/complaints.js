@@ -4,7 +4,62 @@ const router = express.Router();
 const auth = require("../middleware/auth"); 
 const { pool } = require("../db"); 
 const axios = require("axios"); 
- 
+const multer = require("multer");
+const { ObjectId } = require("mongodb");
+const { getComplaintBucket } = require("../db");
+
+// ---------------------------------------------------------------
+// GridFS Complaint Images Endpoints
+// ---------------------------------------------------------------
+const storage = multer.memoryStorage();
+const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
+
+// POST /complaints/image/upload — ingest a complaint image
+router.post("/image/upload", upload.single("file"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file attached" });
+  
+  const bucket = getComplaintBucket();
+  if (!bucket) return res.status(503).json({ error: "Image storage unavailable" });
+
+  const uploadStream = bucket.openUploadStream(req.file.originalname, {
+    contentType: req.file.mimetype
+  });
+  uploadStream.end(req.file.buffer);
+
+  uploadStream.on("finish", () => {
+    res.json({ url: uploadStream.id.toString() });
+  });
+
+  uploadStream.on("error", (err) => {
+    console.error("GridFS complaint upload error:", err);
+    res.status(500).json({ error: "Upload failed" });
+  });
+});
+
+// GET /complaints/image/:id — serve image from GridFS
+router.get("/image/:id", async (req, res) => {
+  const id = req.params.id;
+  if (!/^[a-f0-9]{24}$/i.test(id)) return res.status(400).json({ error: "Invalid image ID" });
+
+  const bucket = getComplaintBucket();
+  if (!bucket) return res.status(503).json({ error: "Image storage unavailable" });
+
+  try {
+    const objectId = new ObjectId(id);
+    const files = await bucket.find({ _id: objectId }).toArray();
+    if (!files.length) return res.status(404).json({ error: "Image not found" });
+
+    res.set("Content-Type", files[0].contentType || "image/jpeg");
+    const downloadStream = bucket.openDownloadStream(objectId);
+    downloadStream.pipe(res);
+    
+    downloadStream.on("error", () => res.status(500).end());
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to serve image" });
+  }
+});
+
 // ---------------------------------------------------------------
 // Priority sentiment boost thresholds
 // ---------------------------------------------------------------

@@ -4,9 +4,18 @@ import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import './Citizen.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const getComplaintMediaUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    if (/^[a-f0-9]{24}$/i.test(url)) return `${API_BASE_URL}/complaints/image/${url}`;
+    return `${API_BASE_URL}${url}`;
+};
+
 const FileComplaint = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [formData, setFormData] = useState({
         title: '',
         text: '',
@@ -44,6 +53,28 @@ const FileComplaint = () => {
             );
         } else {
             toast.error('Geolocation not supported');
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        const toastId = toast.loading('Uploading image...');
+        try {
+            const fd = new FormData();
+            fd.append('file', file);
+            const res = await api.post('/complaints/image/upload', fd, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setFormData(prev => ({ ...prev, attachment_url: res.data.url }));
+            toast.success('Image uploaded successfully!', { id: toastId });
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.error || 'Failed to upload image', { id: toastId });
+        } finally {
+            setUploadingImage(false);
         }
     };
 
@@ -134,15 +165,20 @@ const FileComplaint = () => {
                     </div>
 
                     <div className="form-group">
-                        <label className="form-label">Attachment URL (Photo/Video)</label>
+                        <label className="form-label">Attachment (Photo/Video)</label>
                         <input
-                            type="url"
-                            name="attachment_url"
+                            type="file"
+                            accept="image/*"
                             className="form-input"
-                            placeholder="https://example.com/image.jpg"
-                            value={formData.attachment_url}
-                            onChange={handleChange}
+                            onChange={handleFileUpload}
+                            disabled={uploadingImage}
                         />
+                        {uploadingImage && <div style={{ marginTop: '0.5rem', color: '#5377A2' }}>Uploading image...</div>}
+                        {formData.attachment_url && !uploadingImage && (
+                            <div style={{ marginTop: '0.75rem' }}>
+                                <img src={getComplaintMediaUrl(formData.attachment_url)} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', borderRadius: '0.5rem' }} />
+                            </div>
+                        )}
                     </div>
 
                     <div className="consent-checkbox-group">
@@ -169,7 +205,7 @@ const FileComplaint = () => {
                         <button
                             type="submit"
                             className="btn btn-primary"
-                            disabled={loading}
+                            disabled={loading || uploadingImage}
                         >
                             {loading ? 'Submitting...' : 'Submit Complaint'}
                         </button>
